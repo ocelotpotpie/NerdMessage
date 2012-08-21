@@ -8,6 +8,9 @@ permissions:
     nerdmessage.message:
         description: Send a message to another player
         default: true
+    nerdmessage.cmsg:
+        default: op
+        description: Send message to all users to get attention
 
 commands:
     msg:
@@ -16,3 +19,7 @@ commands:
         permission: nerdmessage.message
         usage: |
            /msg <user> <message>: Send a message to a player
+    cmsg:
+        description: Send message to all users to get attention
+        permission: nerdmessage.cmsg
+        
