@@ -21,7 +21,8 @@ public class NerdMessage extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command command, String name, String[] args) {
         if (command.getName().equalsIgnoreCase("msg")) {
             NMUser user = null;
-            Player receiver = null;
+            //Player receiver = null;
+            CommandSender receiver = null;
             String message;
             if ("r".equalsIgnoreCase(name) || "reply".equalsIgnoreCase(name)) {
                 message = Join(args, 0);
@@ -35,9 +36,20 @@ public class NerdMessage extends JavaPlugin {
             }
 
             if (user == null) {
-                receiver = getServer().getPlayer(args[0]);
+                if (args[0].equalsIgnoreCase("console")) {
+                    receiver = getServer().getConsoleSender();
+                }
+                else {
+                    receiver = getServer().getPlayer(args[0]);
+                }
+                user = getOrCreateUser(sender.getName());
             } else {
-                receiver = getServer().getPlayer(user.getReplyTo());
+                if (user.getReplyTo().equalsIgnoreCase("console")) {
+                    receiver = getServer().getConsoleSender();
+                }
+                else {
+                    receiver = getServer().getPlayer(user.getReplyTo());
+                }
             }
 
             if (receiver == null) {
@@ -53,9 +65,12 @@ public class NerdMessage extends JavaPlugin {
             r.setReplyTo(user.getName());
             user.setReplyTo(receiver.getName());
 
-            System.out.println(user.getName() + ":/msg " + receiver + " " + message);
-            receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.BLACK + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.BLACK + "] " + message);
-            System.out.println("[" + sender.getName() + " -> " + receiver.getName() + "] " + message);
+            System.out.println(user.getName() + ":/msg " + receiver.getName() + " " + message);
+            sender.sendMessage("[" + ChatColor.RED + "me" + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
+            receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
+            if (receiver != getServer().getConsoleSender()) {
+                System.out.println("[" + sender.getName() + " -> " + receiver.getName() + "] " + message);
+            }
             return true;
         }
         else if (command.getName().equalsIgnoreCase("cmsg")) {
@@ -66,6 +81,11 @@ public class NerdMessage extends JavaPlugin {
                 sender.sendMessage(ChatColor.RED + "Needs to be run as a player");
             }
         }
+        else if (command.getName().equalsIgnoreCase("me")) {
+            if (sender instanceof Player) {
+                getServer().broadcastMessage("* " + ChatColor.stripColor(sender.getName()) + " " + Join(args, 0));
+            }
+        }
         
         return false;
     }
@@ -73,7 +93,7 @@ public class NerdMessage extends JavaPlugin {
     public String Join(String[] args, int start) {
         String s = "";
         for (int i = start; i < args.length; i++) {
-            if (s.length() == 0) {
+            if (s.length() > 0) {
                 s += " ";
             }
 
