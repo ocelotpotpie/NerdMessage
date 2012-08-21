@@ -14,7 +14,7 @@ permissions:
 
 commands:
     msg:
-        aliases: [m, r, reply, tell]
+        aliases: [m, t, r, reply, tell]
         description: Send a message to a user.
         permission: nerdmessage.message
         usage: |
