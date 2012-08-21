@@ -53,6 +53,7 @@ public class NerdMessage extends JavaPlugin {
             r.setReplyTo(user.getName());
             user.setReplyTo(receiver.getName());
 
+            System.out.println(user.getName() + ":/msg " + receiver + " " + message);
             receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.BLACK + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.BLACK + "] " + message);
             System.out.println("[" + sender.getName() + " -> " + receiver.getName() + "] " + message);
             return true;
