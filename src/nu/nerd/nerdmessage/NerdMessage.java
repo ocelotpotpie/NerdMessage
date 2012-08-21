@@ -25,7 +25,7 @@ public class NerdMessage extends JavaPlugin {
         if ("r".equalsIgnoreCase(name) || "reply".equalsIgnoreCase(name)) {
             message = Join(args, 0);
             user = getUser(sender.getName());
-            if (user == null || user.getLastReceived() == null) {
+            if (user == null || user.getReplyTo() == null) {
                 sender.sendMessage(ChatColor.RED + "No user to reply to.");
                 return true;
             }
@@ -38,21 +38,21 @@ public class NerdMessage extends JavaPlugin {
             receiver = getServer().getPlayer(args[0]);
         }
         else {
-            receiver = getServer().getPlayer(user.getLastReceived());
+            receiver = getServer().getPlayer(user.getReplyTo());
         }
         
         if (receiver == null) {
             sender.sendMessage(ChatColor.RED + "User is not online.");
             if (user != null) {
-                user.setLastReceived(null);
+                user.setReplyTo(null);
             }
             return true;
         }
         
         NMUser r = getOrCreateUser(receiver.getName());
         
-        r.setLastReceived(user.getName());
-        user.setLastSent(receiver.getName());
+        r.setReplyTo(user.getName());
+        user.setReplyTo(receiver.getName());
         
         receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.BLACK + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.BLACK + "] " + message);
         System.out.println("[" + sender.getName() + " -> " + receiver.getName() + "] " + message);
