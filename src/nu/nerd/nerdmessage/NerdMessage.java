@@ -19,7 +19,7 @@ public class NerdMessage extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String name, String[] args) {
-        if (command.getName().equalsIgnoreCase("msg")) {
+        if (command.getName().equalsIgnoreCase("msg") || command.getName().equalsIgnoreCase("cmsg")) {
             NMUser user = null;
             //Player receiver = null;
             CommandSender receiver = null;
@@ -65,21 +65,20 @@ public class NerdMessage extends JavaPlugin {
             r.setReplyTo(user.getName());
             user.setReplyTo(receiver.getName());
 
-            System.out.println(user.getName() + ":/msg " + receiver.getName() + " " + message);
-            sender.sendMessage("[" + ChatColor.RED + "me" + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
-            receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
+            if (name.equalsIgnoreCase("cmsg")) {
+                sender.sendMessage("[" + ChatColor.RED + "me" + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
+                receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + ChatColor.GREEN + message);
+            }
+            else {
+                System.out.println(user.getName() + ":/msg " + receiver.getName() + " " + message);
+                sender.sendMessage("[" + ChatColor.RED + "me" + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
+                receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
+            }
+            
             if (receiver != getServer().getConsoleSender()) {
                 System.out.println("[" + sender.getName() + " -> " + receiver.getName() + "] " + message);
             }
             return true;
-        }
-        else if (command.getName().equalsIgnoreCase("cmsg")) {
-            if (sender instanceof Player) {
-                getServer().broadcastMessage("<" +ChatColor.GREEN + sender.getName() + ChatColor.WHITE + "> " + ChatColor.GREEN + Join(args, 0));
-            }
-            else {
-                sender.sendMessage(ChatColor.RED + "Needs to be run as a player");
-            }
         }
         else if (command.getName().equalsIgnoreCase("me")) {
             if (sender instanceof Player) {
