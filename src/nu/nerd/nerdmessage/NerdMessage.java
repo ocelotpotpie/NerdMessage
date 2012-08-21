@@ -40,7 +40,7 @@ public class NerdMessage extends JavaPlugin {
                     receiver = getServer().getConsoleSender();
                 }
                 else {
-                    receiver = getServer().getPlayer(args[0]);
+                    receiver = getPlayer(args[0]);
                 }
                 user = getOrCreateUser(sender.getName());
             } else {
@@ -48,7 +48,7 @@ public class NerdMessage extends JavaPlugin {
                     receiver = getServer().getConsoleSender();
                 }
                 else {
-                    receiver = getServer().getPlayer(user.getReplyTo());
+                    receiver = getPlayer(user.getReplyTo());
                 }
             }
 
@@ -75,7 +75,7 @@ public class NerdMessage extends JavaPlugin {
         }
         else if (command.getName().equalsIgnoreCase("cmsg")) {
             if (sender instanceof Player) {
-                getServer().broadcastMessage("<" +ChatColor.GREEN + sender.getName() + ChatColor.BLACK + "> " + ChatColor.GREEN + Join(args, 0));
+                getServer().broadcastMessage("<" +ChatColor.GREEN + sender.getName() + ChatColor.WHITE + "> " + ChatColor.GREEN + Join(args, 0));
             }
             else {
                 sender.sendMessage(ChatColor.RED + "Needs to be run as a player");
@@ -88,6 +88,25 @@ public class NerdMessage extends JavaPlugin {
         }
         
         return false;
+    }
+    
+    public Player getPlayer(final String name) {
+        Player[] players = getServer().getOnlinePlayers();
+
+        Player found = null;
+        String lowerName = ChatColor.stripColor(name).toLowerCase();
+        int delta = Integer.MAX_VALUE;
+        for (Player player : players) {
+            if (player.getName().toLowerCase().startsWith(lowerName)) {
+                int curDelta = player.getName().length() - lowerName.length();
+                if (curDelta < delta) {
+                    found = player;
+                    delta = curDelta;
+                }
+                if (curDelta == 0) break;
+            }
+        }
+        return found;
     }
 
     public String Join(String[] args, int start) {
