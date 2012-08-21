@@ -94,10 +94,10 @@ public class NerdMessage extends JavaPlugin {
         Player[] players = getServer().getOnlinePlayers();
 
         Player found = null;
-        String lowerName = ChatColor.stripColor(name).toLowerCase();
+        String lowerName = name.toLowerCase();
         int delta = Integer.MAX_VALUE;
         for (Player player : players) {
-            if (player.getName().toLowerCase().startsWith(lowerName)) {
+            if (ChatColor.stripColor(player.getName()).toLowerCase().startsWith(lowerName)) {
                 int curDelta = player.getName().length() - lowerName.length();
                 if (curDelta < delta) {
                     found = player;
