@@ -121,12 +121,14 @@ public class NerdMessage extends JavaPlugin {
     }
 
     public NMUser addUser(String username) {
+        username = ChatColor.stripColor(username);
         NMUser u = new NMUser(this, username);
         users.add(u);
         return u;
     }
 
     public NMUser getOrCreateUser(String username) {
+        username = ChatColor.stripColor(username);
         NMUser u = getUser(username);
         if (u == null) {
             u = addUser(username);
