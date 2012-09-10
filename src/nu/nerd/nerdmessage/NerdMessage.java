@@ -19,6 +19,8 @@ public class NerdMessage extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String name, String[] args) {
+        if (args.length == 0)
+            return false;
         if (command.getName().equalsIgnoreCase("msg") || command.getName().equalsIgnoreCase("cmsg")) {
             NMUser user = null;
             //Player receiver = null;
