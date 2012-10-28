@@ -1,6 +1,7 @@
 name: NerdMessage
 version: ${project.version}
 description: ${project.description}
+website: ${project.url}
 author: Deaygo Jarkko
 main: nu.nerd.nerdmessage.NerdMessage
 
