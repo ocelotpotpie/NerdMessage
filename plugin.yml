@@ -16,6 +16,13 @@ permissions:
         default: op
         description: Send message to all users to get attention
 
+    nerdmessage.ignore:
+        default: true
+        description: Temporarily ignore a player
+    nerdmessage.ignore.bypass-msg:
+        default: op
+        description: Allows a user to bypass /ignore in personal messages.
+
 commands:
     msg:
         aliases: [m, t, r, reply, tell]
@@ -29,4 +36,10 @@ commands:
     me:
         description: Send an action
         permission: nerdmessage.me
-        
+    ignore:
+        permission: nerdmessage.ignore
+        description: Temporarily ignore a user.
+    unignore:
+        permission: nerdmessage.ignore
+        description: Unignore an ignored user.
+
