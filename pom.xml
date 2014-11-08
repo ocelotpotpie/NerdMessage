@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nu.nerd</groupId>
 	<artifactId>nerdmessage</artifactId>
-	<version>0.2</version>
+	<version>0.3</version>
 	<packaging>jar</packaging>
 	<name>NerdMessage</name>
     <description>Messaging plugin for Bukkit</description>
@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.6.4-R0.1-SNAPSHOT</version>
+			<version>1.7.9-R0.2</version>
 		</dependency>
 	</dependencies>
 	<repositories>

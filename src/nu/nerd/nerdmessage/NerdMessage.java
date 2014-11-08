@@ -1,8 +1,11 @@
 package nu.nerd.nerdmessage;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,10 +14,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class NerdMessage extends JavaPlugin {
 
-    List<NMUser> users = new ArrayList<NMUser>();
+    List<NMUser> users = new CopyOnWriteArrayList<NMUser>();
 
     @Override
     public void onEnable() {
+        this.getServer().getPluginManager().registerEvents(new NerdMessageListener(this), this);
     }
 
     @Override
@@ -67,24 +71,66 @@ public class NerdMessage extends JavaPlugin {
             r.setReplyTo(user.getName());
             user.setReplyTo(receiver.getName());
 
+            // Whether to actually send the message to the player or not (for /ignore).
+            boolean doSendMessage = sender.hasPermission("nerdmessage.ignore.bypass-msg") || !(r.isIgnoringPlayer(sender.getName()));
+
             if (name.equalsIgnoreCase("cmsg")) {
                 sender.sendMessage("[" + ChatColor.RED + "Me" + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
-                receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.WHITE + " -> " + ChatColor.GOLD + "Me" + ChatColor.WHITE + "] " + ChatColor.GREEN + message);
+                if (doSendMessage) {
+                    receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.WHITE + " -> " + ChatColor.GOLD + "Me" + ChatColor.WHITE + "] " + ChatColor.GREEN + message);
+                }
             }
             else {
                 System.out.println(user.getName() + ":/msg " + receiver.getName() + " " + message);
                 sender.sendMessage("[" + ChatColor.RED + "Me" + ChatColor.WHITE + " -> " + ChatColor.GOLD + receiver.getName() + ChatColor.WHITE + "] " + message);
-                receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.WHITE + " -> " + ChatColor.GOLD + "Me" + ChatColor.WHITE + "] " + message);
+                if (doSendMessage) {
+                    receiver.sendMessage("[" + ChatColor.RED + sender.getName() + ChatColor.WHITE + " -> " + ChatColor.GOLD + "Me" + ChatColor.WHITE + "] " + message);
+                }
             }
             
             if (receiver != getServer().getConsoleSender()) {
-                System.out.println("[" + sender.getName() + " -> " + receiver.getName() + "] " + message);
+                System.out.println((doSendMessage ? "" : "Blocked by /ignore: ")
+                        + "[" + sender.getName() + " -> " + receiver.getName() + "] " + message);
             }
             return true;
         }
         else if (command.getName().equalsIgnoreCase("me")) {
             if (sender instanceof Player) {
                 getServer().broadcastMessage("* " + ChatColor.stripColor(sender.getName()) + " " + Join(args, 0));
+            }
+        }
+        // Non-persistent ignore command.
+        else if (command.getName().equalsIgnoreCase("ignore")) {
+            if(args.length != 1 || !(sender instanceof Player)) {
+                return false;
+            }
+
+            String ignoreName = args[0];
+            Player ignorePlayer = getPlayer(ignoreName);
+            if(ignorePlayer != null) {
+                ignoreName = ignorePlayer.getName();
+            }
+
+            if(ignoreName.equalsIgnoreCase(sender.getName())) {
+                sender.sendMessage(ChatColor.RED + "You can't ignore yourself!");
+                return true;
+            }
+
+            if(getOrCreateUser(sender.getName()).addIgnoredPlayer(ignoreName.toLowerCase())) {
+                sender.sendMessage(ChatColor.GOLD + "Ignoring " + ignoreName + " until the next restart.");
+            } else {
+                sender.sendMessage(ChatColor.RED + "You are already ignoring that player.");
+            }
+        }
+        else if (command.getName().equalsIgnoreCase("unignore")) {
+            if(args.length != 1 || !(sender instanceof Player)) {
+                return false;
+            }
+
+            if(getOrCreateUser(sender.getName()).removeIgnoredPlayer(args[0].toLowerCase())) {
+                sender.sendMessage(ChatColor.GOLD + "Removed " + args[0] + " from your ignore list.");
+            } else {
+                sender.sendMessage(ChatColor.RED + "You aren't ignoring " + args[0] + ".");
             }
         }
         
@@ -155,5 +201,9 @@ public class NerdMessage extends JavaPlugin {
         if (u != null) {
             users.remove(u);
         }
+    }
+
+    public List<NMUser> getUsers() {
+        return users;
     }
 }
