@@ -12,6 +12,9 @@ permissions:
     nerdmessage.me:
         description: Allow a user to send an action
         default: true
+    nerdmessage.sarc:
+        description: Allow a user to speak in italics
+        default: true
     nerdmessage.cmsg:
         default: op
         description: Send message to all users to get attention
@@ -36,6 +39,9 @@ commands:
     me:
         description: Send an action
         permission: nerdmessage.me
+    s:
+        description: Speak in italics
+        permission: nerdmessage.sarc
     ignore:
         permission: nerdmessage.ignore
         description: Temporarily ignore a user.
