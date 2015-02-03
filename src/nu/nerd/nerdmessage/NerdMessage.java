@@ -107,16 +107,20 @@ public class NerdMessage extends JavaPlugin {
             getServer().getLogger().info(message);
         }
         else if (command.getName().equalsIgnoreCase("s")) {
-            String message = "<" + sender.getName() + "> " + ChatColor.ITALIC + Join(args, 0);
-            if (sender instanceof Player) {
-                for (Player p : getServer().getOnlinePlayers()) {
-                    NMUser recipient = getUser(ChatColor.stripColor(p.getName()));
-                    if (recipient == null || recipient != null && !recipient.isIgnoringPlayer(sender.getName().toLowerCase())) {
-                        p.sendMessage(message);
+            if (args.length == 0) {
+                sender.sendMessage(ChatColor.GOLD + "Sends a message to global chat - in italics, to indicate sarcasm.");
+            } else {
+                String message = "<" + sender.getName() + "> " + ChatColor.ITALIC + Join(args, 0);
+                if (sender instanceof Player) {
+                    for (Player p : getServer().getOnlinePlayers()) {
+                        NMUser recipient = getUser(ChatColor.stripColor(p.getName()));
+                        if (recipient == null || recipient != null && !recipient.isIgnoringPlayer(sender.getName().toLowerCase())) {
+                            p.sendMessage(message);
+                        }
                     }
                 }
+                getServer().getLogger().info(message);
             }
-            getServer().getLogger().info(message);
         }
         // Non-persistent ignore command.
         else if (command.getName().equalsIgnoreCase("ignore")) {
