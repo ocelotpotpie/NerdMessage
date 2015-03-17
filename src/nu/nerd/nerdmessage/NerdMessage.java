@@ -1,5 +1,6 @@
 package nu.nerd.nerdmessage;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -161,7 +162,7 @@ public class NerdMessage extends JavaPlugin {
     }
     
     public Player getPlayer(final String name) {
-        Player[] players = getServer().getOnlinePlayers();
+        Collection<? extends Player> players = getServer().getOnlinePlayers();
 
         Player found = null;
         String lowerName = name.toLowerCase();
