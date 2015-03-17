@@ -16,6 +16,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class NerdMessage extends JavaPlugin {
 
     List<NMUser> users = new CopyOnWriteArrayList<NMUser>();
+    HashMap<String, Integer> muteCounts = new HashMap<String, Integer>();
 
     @Override
     public void onEnable() {
@@ -142,6 +143,7 @@ public class NerdMessage extends JavaPlugin {
 
             if(getOrCreateUser(sender.getName()).addIgnoredPlayer(ignoreName.toLowerCase())) {
                 sender.sendMessage(ChatColor.GOLD + "Ignoring " + ignoreName + " until the next restart.");
+                this.handleStaffAlert(ignoreName.toLowerCase());
             } else {
                 sender.sendMessage(ChatColor.RED + "You are already ignoring that player.");
             }
@@ -159,6 +161,19 @@ public class NerdMessage extends JavaPlugin {
         }
         
         return false;
+    }
+
+    public void handleStaffAlert(String name) {
+        Integer count = 1;
+        if (this.muteCounts.containsKey(name)) {
+            count = this.muteCounts.get(name);
+            count = count + 1;
+            if (count % 3 == 0) {
+                String msg = String.format("Player \"%s\" has been muted by %d people.", name, count);
+                Bukkit.broadcast(ChatColor.GRAY + msg, "nerdmessage.ignore.alert");
+            }
+        }
+        this.muteCounts.put(name, count);
     }
     
     public Player getPlayer(final String name) {

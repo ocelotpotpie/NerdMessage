@@ -25,6 +25,9 @@ permissions:
     nerdmessage.ignore.bypass-msg:
         default: op
         description: Allows a user to bypass /ignore in personal messages.
+    nerdmessage.ignore.alert:
+        default: op
+        description: Receive an alert when a user has been /ignore'd many times.
 
 commands:
     msg:
