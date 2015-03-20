@@ -17,10 +17,13 @@ public class NerdMessage extends JavaPlugin {
 
     List<NMUser> users = new CopyOnWriteArrayList<NMUser>();
     HashMap<String, Integer> muteCounts = new HashMap<String, Integer>();
+    Integer alertThreshold;
 
     @Override
     public void onEnable() {
         this.getServer().getPluginManager().registerEvents(new NerdMessageListener(this), this);
+        this.saveDefaultConfig();
+        this.alertThreshold = this.getConfig().getInt("alert_threshold", 3);
     }
 
     @Override
@@ -168,9 +171,11 @@ public class NerdMessage extends JavaPlugin {
         if (this.muteCounts.containsKey(name)) {
             count = this.muteCounts.get(name);
             count = count + 1;
-            if (count % 3 == 0) {
-                String msg = String.format("Player \"%s\" has been muted by %d people.", name, count);
-                Bukkit.broadcast(ChatColor.GRAY + msg, "nerdmessage.ignore.alert");
+            if (this.alertThreshold > 0) {
+                if (count % this.alertThreshold == 0) {
+                    String msg = String.format("Player \"%s\" has been ignored by %d people.", name, count);
+                    Bukkit.broadcast(ChatColor.GRAY + msg, "nerdmessage.ignore.alert");
+                }
             }
         }
         this.muteCounts.put(name, count);

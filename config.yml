@@ -1,0 +1,2 @@
+# When to start alerting staff of ignores on a player (0 to disable)
+alert_threshold: 3
