@@ -105,6 +105,10 @@ public class NerdMessage extends JavaPlugin {
                 for (Player p : getServer().getOnlinePlayers()) {
                     NMUser recipient = getUser(ChatColor.stripColor(p.getName()));
                     if (recipient == null || recipient != null && !recipient.isIgnoringPlayer(sender.getName().toLowerCase())) {
+                        if (this.isAllCaps(Join(args, 0))) {
+                            sender.sendMessage(ChatColor.RED + "Please don't chat in all caps.");
+                            return true;
+                        }
                         p.sendMessage(message);
                     }
                 }
@@ -115,6 +119,10 @@ public class NerdMessage extends JavaPlugin {
             if (args.length == 0) {
                 sender.sendMessage(ChatColor.GOLD + "Sends a message to global chat - in italics, to indicate sarcasm.");
             } else {
+                if (this.isAllCaps(Join(args, 0))) {
+                    sender.sendMessage(ChatColor.RED + "All-caps? How original...");
+                    return true;
+                }
                 String message = "<" + sender.getName() + "> " + ChatColor.ITALIC + Join(args, 0);
                 if (sender instanceof Player) {
                     for (Player p : getServer().getOnlinePlayers()) {
@@ -179,6 +187,18 @@ public class NerdMessage extends JavaPlugin {
             }
         }
         this.muteCounts.put(name, count);
+    }
+
+    public boolean isAllCaps(String msg) {
+        int caps = 0;
+        int words = 1;
+        if (msg.length() < 1) return false;
+        for (int i=0; i<msg.length(); i++){
+            if (Character.isUpperCase(msg.charAt(i))) caps++;
+            if (Character.isSpaceChar(msg.charAt(i))) words++;
+        }
+        double percentage = (double) caps/msg.length();
+        return ((words > 1) && (percentage > 0.5));
     }
     
     public Player getPlayer(final String name) {
