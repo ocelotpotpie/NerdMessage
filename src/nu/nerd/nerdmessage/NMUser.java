@@ -1,11 +1,13 @@
 package nu.nerd.nerdmessage;
 
-
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Represents a player's NerdMessage metadata
+ */
 public class NMUser {
+
     private String name;
     private String replyTo;
     private NerdMessage plugin;
@@ -48,4 +50,5 @@ public class NMUser {
     public boolean isIgnoringPlayer(String playerName) {
         return ignoring.contains(playerName);
     }
+
 }

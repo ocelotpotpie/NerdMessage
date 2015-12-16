@@ -6,49 +6,76 @@ author: Deaygo Jarkko
 main: nu.nerd.nerdmessage.NerdMessage
 
 permissions:
-    nerdmessage.message:
-        description: Send a message to another player
-        default: true
-    nerdmessage.me:
-        description: Allow a user to send an action
-        default: true
-    nerdmessage.sarc:
-        description: Allow a user to speak in italics
-        default: true
-    nerdmessage.cmsg:
-        default: op
-        description: Send message to all users to get attention
+  nerdmessage.message:
+    description: Send a message to another player
+    default: true
+  nerdmessage.me:
+    description: Allow a user to send an action
+    default: true
+  nerdmessage.sarc:
+    description: Allow a user to speak in italics
+    default: true
+  nerdmessage.cmsg:
+    default: op
+    description: Send message to all users to get attention
 
-    nerdmessage.ignore:
-        default: true
-        description: Temporarily ignore a player
-    nerdmessage.ignore.bypass-msg:
-        default: op
-        description: Allows a user to bypass /ignore in personal messages.
-    nerdmessage.ignore.alert:
-        default: op
-        description: Receive an alert when a user has been /ignore'd many times.
+  nerdmessage.ignore:
+    default: true
+    description: Temporarily ignore a player
+  nerdmessage.ignore.bypass-msg:
+    default: op
+    description: Allows a user to bypass /ignore in personal messages.
+  nerdmessage.ignore.alert:
+    default: op
+    description: Receive an alert when a user has been /ignore'd many times.
+
+  nerdmessage.broadcast:
+    description: Allow /broadcast
+    default: op
+  nerdmessage.mb:
+    description: Access Mod Chat
+    default: op
+  nerdmessage.ab:
+    description: Access Admin Chat
+    default: op
+  nerdmessage.o:
+    description: Access /o
+    default: op
 
 commands:
-    msg:
-        aliases: [m, t, r, reply, tell]
-        description: Send a message to a user.
-        permission: nerdmessage.message
-        usage: |
-           /msg <user> <message>: Send a message to a player
-    cmsg:
-        description: Send message to all users to get attention
-        permission: nerdmessage.cmsg
-    me:
-        description: Send an action
-        permission: nerdmessage.me
-    s:
-        description: Speak in italics
-        permission: nerdmessage.sarc
-    ignore:
-        permission: nerdmessage.ignore
-        description: Temporarily ignore a user.
-    unignore:
-        permission: nerdmessage.ignore
-        description: Unignore an ignored user.
+  msg:
+    aliases: [m, t, r, reply, tell]
+    description: Send a message to a user.
+    permission: nerdmessage.message
+    usage: |
+      /msg <user> <message>: Send a message to a player
+  cmsg:
+    description: Send an attention-grabbing green "staff context" message to a player
+    permission: nerdmessage.cmsg
+  me:
+    description: Send an action
+    permission: nerdmessage.me
+  s:
+    description: Speak in italics
+    permission: nerdmessage.sarc
+  ignore:
+    permission: nerdmessage.ignore
+    description: Temporarily ignore a user.
+  unignore:
+    permission: nerdmessage.ignore
+    description: Unignore an ignored user.
+  broadcast:
+    aliases: [b]
+    permission: nerdmessage.broadcast
+    description: Broadcast a message to all online players, as the server.
+  mb:
+    aliases: [mod-broadcast]
+    permission: nerdmessage.mb
+    description: Mod Chat
+  ab:
+    permission: nerdmessage.ab
+    description: Admin Chat
+  o:
+    permission: nerdmessage.o
+    description: Send an attention-grabbing green "staff context" message in public chat.
 
