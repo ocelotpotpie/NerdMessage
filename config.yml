@@ -1,2 +1,13 @@
 # When to start alerting staff of ignores on a player (0 to disable)
 alert_threshold: 3
+
+
+# Cross-server messaging config
+server_name: null
+redis:
+  enabled: false
+  server: localhost
+  password: null
+  timeout: 30
+  port: 6379
+  max_connections: 4

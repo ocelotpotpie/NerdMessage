@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 
 import nu.nerd.nerdmessage.commands.BroadcastCommands;
 import nu.nerd.nerdmessage.commands.ChatCommands;
@@ -11,6 +12,10 @@ import nu.nerd.nerdmessage.commands.IgnoreCommands;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class NerdMessage extends JavaPlugin {
 
@@ -18,16 +23,28 @@ public class NerdMessage extends JavaPlugin {
     private List<NMUser> users = new CopyOnWriteArrayList<NMUser>();
     private HashMap<String, Integer> muteCounts = new HashMap<String, Integer>();
     private Integer alertThreshold;
+    private String serverName;
+    private JedisPool jedisPool;
 
 
     @Override
     public void onEnable() {
         loadConfig();
+        establishRedisConnection();
         registerCommands();
         this.getServer().getPluginManager().registerEvents(new NerdMessageListener(this), this);
     }
 
 
+    @Override
+    public void onDisable() {
+        jedisPool.destroy(); //clean up the pool of Redis connections
+    }
+
+
+    /**
+     * Register command executors
+     */
     public void registerCommands() {
         ChatCommands chatCommands = new ChatCommands(this);
         IgnoreCommands ignoreCommands = new IgnoreCommands(this);
@@ -35,9 +52,77 @@ public class NerdMessage extends JavaPlugin {
     }
 
 
+    /**
+     * Save the default config if not present and load values from the config file.
+     * Redis connection details are handled by establishRedisConnection()
+     */
     public void loadConfig() {
         this.saveDefaultConfig();
         this.alertThreshold = this.getConfig().getInt("alert_threshold", 3);
+        this.serverName = this.getConfig().getString("server_name", null);
+    }
+
+
+    /**
+     * Connect to the redis server and subscribe to "nerdmessage.*"
+     * Redis is used for cross-server chat.
+     */
+    private void establishRedisConnection() {
+
+        Boolean enabled = getConfig().getBoolean("redis.enabled", false);
+        String server = getConfig().getString("redis.server", "localhost");
+        String password = getConfig().getString("redis.password", null);
+        Integer port = getConfig().getInt("redis.port", 6379);
+        Integer timeout = getConfig().getInt("redis.timeout", 30);
+        Integer connections = getConfig().getInt("redis.max_connections", 4);
+
+        JedisPoolConfig poolconfig = new JedisPoolConfig();
+        if (connections < 2) connections = 2; // redis requires at least two connections for pubsub
+        poolconfig.setMaxTotal(connections);
+
+        if (enabled && server != null && password != null && !password.equals("")) {
+            jedisPool = new JedisPool(poolconfig, server, port, timeout, password);
+        } else if (enabled && server != null) {
+            jedisPool = new JedisPool(poolconfig, server, port, timeout);
+        } else {
+            getLogger().log(Level.WARNING, "Redis is not configured. Global broadcasts will not be available.");
+            return;
+        }
+
+        getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
+            public void run() {
+                try {
+                    Jedis jedis = jedisPool.getResource();
+                    jedis.psubscribe(new RedisListener(NerdMessage.this), "nerdmessage.*");
+                } catch (Exception ex) {
+                    getLogger().log(Level.SEVERE, ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+
+    /**
+     * Publish a message to a Redis channel.
+     * @param channel This will be concatenated with a "nerdmessage." namespace. e.g. nerdmessage.[channel]
+     * @param message The message to send to the Redis channel
+     * @throws Exception
+     */
+    public void redisPublish(final String channel, final String message) throws JedisException {
+        getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
+            public void run() {
+                Jedis jedis = jedisPool.getResource();
+                try {
+                    jedis.publish("nerdmessage." + channel, message);
+                } catch (JedisException ex) {
+                    throw ex;
+                } finally {
+                    jedisPool.returnResourceObject(jedis);
+                }
+            }
+        });
     }
 
 
@@ -107,6 +192,11 @@ public class NerdMessage extends JavaPlugin {
 
     public int getAlertThreshold() {
         return alertThreshold;
+    }
+
+
+    public String getServerName() {
+        return serverName;
     }
 
 

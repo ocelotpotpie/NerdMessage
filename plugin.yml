@@ -30,13 +30,16 @@ permissions:
     description: Receive an alert when a user has been /ignore'd many times.
 
   nerdmessage.broadcast:
-    description: Allow /broadcast
+    description: Access /broadcast
+    default: op
+  nerdmessage.globalbroadcast:
+    description: Access /global-broadcast
     default: op
   nerdmessage.mb:
-    description: Access Mod Chat
+    description: Access Mod Chat and its global counterpart
     default: op
   nerdmessage.ab:
-    description: Access Admin Chat
+    description: Access Admin Chat and its global counterpart
     default: op
   nerdmessage.o:
     description: Access /o
@@ -78,4 +81,13 @@ commands:
   o:
     permission: nerdmessage.o
     description: Send an attention-grabbing green "staff context" message in public chat.
+  mbg:
+    permission: nerdmessage.mb
+    description: Global Mod Chat
+  abg:
+    permission: nerdmessage.ab
+    description: Global Admin Chat
+  global-broadcast:
+    permission: nerdmessage.globalbroadcast
+    description: Broadcast a message to all online players on all servers.
 
