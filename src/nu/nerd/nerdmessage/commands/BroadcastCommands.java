@@ -90,20 +90,20 @@ public class BroadcastCommands implements CommandExecutor {
 
     public void mbg(CommandSender sender, String message) {
         message = globalTag("MBG", sender.getName()) + ChatColor.GREEN + message;
-        try {
+        if (plugin.crossServerEnabled()) {
             plugin.redisPublish("mbg", message);
-        } catch (JedisException ex) {
-            sender.sendMessage(redisError);
+        } else {
+            sender.sendMessage(ChatColor.RED + "Cross-server messaging is not configured.");
         }
     }
 
 
     public void abg(CommandSender sender, String message) {
         message = globalTag("ABG", sender.getName()) + ChatColor.GOLD + message;
-        try {
+        if (plugin.crossServerEnabled()) {
             plugin.redisPublish("abg", message);
-        } catch (JedisException ex) {
-            sender.sendMessage(redisError);
+        } else {
+            sender.sendMessage(ChatColor.RED + "Cross-server messaging is not configured.");
         }
     }
 
@@ -111,10 +111,10 @@ public class BroadcastCommands implements CommandExecutor {
     public void globalBroadcast(CommandSender sender, String message) {
         String tag = String.format("[%sGlobal %sBroadcast%s] ", ChatColor.DARK_PURPLE, ChatColor.RED, ChatColor.WHITE);
         message = tag + ChatColor.GREEN + message;
-        try {
+        if (plugin.crossServerEnabled()) {
             plugin.redisPublish("globalbroadcast", message);
-        } catch (JedisException ex) {
-            sender.sendMessage(redisError);
+        } else {
+            sender.sendMessage(ChatColor.RED + "Cross-server messaging is not configured.");
         }
     }
 

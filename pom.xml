@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nu.nerd</groupId>
 	<artifactId>nerdmessage</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<packaging>jar</packaging>
 	<name>NerdMessage</name>
     <description>Messaging plugin for Bukkit</description>
@@ -83,18 +83,19 @@
 						</goals>
 						<configuration>
 							<artifactSet>
-								<excludes>
-									<exclude>org.bukkit</exclude>
-								</excludes>
+								<includes>
+									<include>redis.clients</include>
+									<include>org.apache.commons</include>
+								</includes>
 							</artifactSet>
 							<relocations>
 								<relocation>
-									<pattern>redis.clients.jedis</pattern>
-									<shadedPattern>nu.nerd.nerdmessage.internal.jedis</shadedPattern>
+									<pattern>redis.clients</pattern>
+									<shadedPattern>nu.nerd.nerdmessage.internal</shadedPattern>
 								</relocation>
 								<relocation>
-									<pattern>org.apache.commons.pool2</pattern>
-									<shadedPattern>nu.nerd.nerdmessage.internal.pool2</shadedPattern>
+									<pattern>org.apache.commons</pattern>
+									<shadedPattern>nu.nerd.nerdmessage.internal</shadedPattern>
 								</relocation>
 							</relocations>
 						</configuration>

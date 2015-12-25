@@ -12,10 +12,12 @@ import nu.nerd.nerdmessage.commands.IgnoreCommands;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+
 
 public class NerdMessage extends JavaPlugin {
 
@@ -92,11 +94,10 @@ public class NerdMessage extends JavaPlugin {
         getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
             public void run() {
                 try {
-                    Jedis jedis = jedisPool.getResource();
+                    Jedis jedis = getJedisResource();
                     jedis.psubscribe(new RedisListener(NerdMessage.this), "nerdmessage.*");
                 } catch (Exception ex) {
                     getLogger().log(Level.SEVERE, ex.getMessage());
-                    ex.printStackTrace();
                 }
             }
         });
@@ -110,19 +111,42 @@ public class NerdMessage extends JavaPlugin {
      * @param message The message to send to the Redis channel
      * @throws Exception
      */
-    public void redisPublish(final String channel, final String message) throws JedisException {
-        getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
-            public void run() {
-                Jedis jedis = jedisPool.getResource();
+    public void redisPublish(final String channel, final String message) {
+        getServer().getScheduler().runTaskAsynchronously(this, new BukkitRunnable() {
+            public void run()  {
+                Jedis jedis = null;
                 try {
+                    jedis = getJedisResource();
                     jedis.publish("nerdmessage." + channel, message);
-                } catch (JedisException ex) {
-                    throw ex;
+                } catch (Exception ex) {
+                    getLogger().log(Level.SEVERE, ex.getMessage());
                 } finally {
-                    jedisPool.returnResourceObject(jedis);
+                    if (jedis != null) jedis.close(); //return the resource to the pool
                 }
             }
         });
+    }
+
+
+    /**
+     * Check out a Jedis resource from the pool.
+     * Don't forget to return it to the pool after...
+     * @throws Exception
+     */
+    private Jedis getJedisResource() throws Exception {
+        if (jedisPool != null) {
+            return jedisPool.getResource();
+        } else {
+            throw new Exception("NerdMessage cannot connect to Redis.");
+        }
+    }
+
+
+    /**
+     * Whether Redis is configured
+     */
+    public boolean crossServerEnabled() {
+        return jedisPool != null;
     }
 
 
