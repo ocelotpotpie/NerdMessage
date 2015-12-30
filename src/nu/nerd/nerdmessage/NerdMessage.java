@@ -10,6 +10,7 @@ import nu.nerd.nerdmessage.commands.BroadcastCommands;
 import nu.nerd.nerdmessage.commands.ChatCommands;
 import nu.nerd.nerdmessage.commands.IgnoreCommands;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -112,6 +113,17 @@ public class NerdMessage extends JavaPlugin {
      * @throws Exception
      */
     public void redisPublish(final String channel, final String message) {
+        redisPublish(null, channel, message);
+    }
+
+
+    /**
+     * Publish a message to a Redis channel.
+     * @param sender Who issued the command. This player/console will recieve notice if sending fails.
+     * @param channel This will be concatenated with a "nerdmessage." namespace. e.g. nerdmessage.[channel]
+     * @param message The message to send to the Redis channel
+     */
+    public void redisPublish(final CommandSender sender, final String channel, final String message) {
         getServer().getScheduler().runTaskAsynchronously(this, new BukkitRunnable() {
             public void run()  {
                 Jedis jedis = null;
@@ -119,7 +131,15 @@ public class NerdMessage extends JavaPlugin {
                     jedis = getJedisResource();
                     jedis.publish("nerdmessage." + channel, message);
                 } catch (Exception ex) {
-                    getLogger().log(Level.SEVERE, ex.getMessage());
+                    final String error = ex.getMessage();
+                    getLogger().log(Level.SEVERE, error);
+                    if (sender != null) {
+                        getServer().getScheduler().runTask(NerdMessage.this, new BukkitRunnable() {
+                            public void run() {
+                                sender.sendMessage(ChatColor.RED + "NerdMessage Error: " + error);
+                            }
+                        });
+                    }
                 } finally {
                     if (jedis != null) jedis.close(); //return the resource to the pool
                 }

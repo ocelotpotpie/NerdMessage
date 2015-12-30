@@ -7,7 +7,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import redis.clients.jedis.exceptions.JedisException;
 
 public class BroadcastCommands implements CommandExecutor {
 
@@ -91,7 +90,7 @@ public class BroadcastCommands implements CommandExecutor {
     public void mbg(CommandSender sender, String message) {
         message = globalTag("MBG", sender.getName()) + ChatColor.GREEN + message;
         if (plugin.crossServerEnabled()) {
-            plugin.redisPublish("mbg", message);
+            plugin.redisPublish(sender, "mbg", message);
         } else {
             sender.sendMessage(ChatColor.RED + "Cross-server messaging is not configured.");
         }
@@ -101,7 +100,7 @@ public class BroadcastCommands implements CommandExecutor {
     public void abg(CommandSender sender, String message) {
         message = globalTag("ABG", sender.getName()) + ChatColor.GOLD + message;
         if (plugin.crossServerEnabled()) {
-            plugin.redisPublish("abg", message);
+            plugin.redisPublish(sender, "abg", message);
         } else {
             sender.sendMessage(ChatColor.RED + "Cross-server messaging is not configured.");
         }
@@ -112,7 +111,7 @@ public class BroadcastCommands implements CommandExecutor {
         String tag = String.format("[%sGlobal %sBroadcast%s] ", ChatColor.DARK_PURPLE, ChatColor.RED, ChatColor.WHITE);
         message = tag + ChatColor.GREEN + message;
         if (plugin.crossServerEnabled()) {
-            plugin.redisPublish("globalbroadcast", message);
+            plugin.redisPublish(sender, "globalbroadcast", message);
         } else {
             sender.sendMessage(ChatColor.RED + "Cross-server messaging is not configured.");
         }
