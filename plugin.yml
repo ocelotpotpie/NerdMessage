@@ -68,7 +68,6 @@ commands:
     permission: nerdmessage.ignore
     description: Unignore an ignored user.
   broadcast:
-    aliases: [b]
     permission: nerdmessage.broadcast
     description: Broadcast a message to all online players, as the server.
   mb:
