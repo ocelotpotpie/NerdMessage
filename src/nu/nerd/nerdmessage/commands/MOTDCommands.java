@@ -69,7 +69,7 @@ public class MOTDCommands implements CommandExecutor {
 		if (motd == null || motd.equals("")) {
 			sender.sendMessage(ChatColor.GREEN + "No Message Of The Day is set");
 		} else {
-			sender.sendMessage(ChatColor.AQUA + "[MOTD]: " + motd);
+			sender.sendMessage(ChatColor.AQUA + "[MOTD]: " + ChatColor.WHITE + ChatColor.translateAlternateColorCodes('&', motd));
 		}
     }
     
@@ -92,7 +92,7 @@ public class MOTDCommands implements CommandExecutor {
 		if (mbmotd == null || mbmotd.equals("")) {
 			sender.sendMessage(ChatColor.GREEN + "No Moderator Message Of The Day is set");
 		} else {
-			sender.sendMessage(ChatColor.GREEN + "[MB MOTD]: " + mbmotd);
+			sender.sendMessage(ChatColor.GREEN + "[MB MOTD]: " + ChatColor.WHITE + ChatColor.translateAlternateColorCodes('&', mbmotd));
 		}
     }
     
@@ -115,7 +115,7 @@ public class MOTDCommands implements CommandExecutor {
 		if (abmotd == null || abmotd.equals("")) {
 			sender.sendMessage(ChatColor.GREEN + "No Administrator Message Of The Day is set");
 		} else {
-			sender.sendMessage(ChatColor.GOLD + "[AB MOTD]: " + abmotd);
+			sender.sendMessage(ChatColor.GOLD + "[AB MOTD]: " + ChatColor.WHITE + ChatColor.translateAlternateColorCodes('&', abmotd));
 		}
     }
     

@@ -80,13 +80,13 @@ public class NerdMessageListener implements Listener {
                     return;
                 }
                 if (motd != null && !motd.equals("")) {
-                    p.sendMessage(ChatColor.AQUA + "[MOTD]: " + motd);
+                    p.sendMessage(ChatColor.AQUA + "[MOTD]: " + ChatColor.WHITE + ChatColor.translateAlternateColorCodes('&', motd));
                 }
                 if (mbmotd != null && !mbmotd.equals("")) {
-                    p.sendMessage(ChatColor.GREEN + "[MB MOTD]: " + mbmotd);
+                    p.sendMessage(ChatColor.GREEN + "[MB MOTD]: " + ChatColor.WHITE + ChatColor.translateAlternateColorCodes('&', mbmotd));
                 }
                 if (abmotd != null && !abmotd.equals("")) {
-                    p.sendMessage(ChatColor.GOLD + "[AB MOTD]: " + abmotd);
+                    p.sendMessage(ChatColor.GOLD + "[AB MOTD]: " + ChatColor.WHITE + ChatColor.translateAlternateColorCodes('&', abmotd));
                 }
             }
         }.runTaskLater(plugin, 40);
