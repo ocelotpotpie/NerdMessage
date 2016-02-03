@@ -11,3 +11,12 @@ redis:
   timeout: 30
   port: 6379
   max_connections: 4
+
+# General Message of the day
+MOTD: ''
+
+# Moderator Message of the day
+MBMOTD: ''
+
+# Administrator Message of the day
+ABMOTD: ''

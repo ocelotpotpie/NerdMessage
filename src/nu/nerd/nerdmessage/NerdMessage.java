@@ -9,6 +9,8 @@ import java.util.logging.Level;
 import nu.nerd.nerdmessage.commands.BroadcastCommands;
 import nu.nerd.nerdmessage.commands.ChatCommands;
 import nu.nerd.nerdmessage.commands.IgnoreCommands;
+import nu.nerd.nerdmessage.commands.MOTDCommands;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -52,6 +54,7 @@ public class NerdMessage extends JavaPlugin {
         ChatCommands chatCommands = new ChatCommands(this);
         IgnoreCommands ignoreCommands = new IgnoreCommands(this);
         BroadcastCommands broadcastCommands = new BroadcastCommands(this);
+        MOTDCommands motdCommands = new MOTDCommands(this);
     }
 
 
