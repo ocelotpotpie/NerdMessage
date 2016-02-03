@@ -80,7 +80,7 @@ public class NerdMessageListener implements Listener {
                     return;
                 }
                 if (motd != null && !motd.equals("")) {
-                    p.sendMessage(ChatColor.AQUA + "[MOTD]: '" + motd + "'");
+                    p.sendMessage(ChatColor.AQUA + "[MOTD]: " + motd);
                 }
                 if (mbmotd != null && !mbmotd.equals("")) {
                     p.sendMessage(ChatColor.GREEN + "[MB MOTD]: " + mbmotd);
