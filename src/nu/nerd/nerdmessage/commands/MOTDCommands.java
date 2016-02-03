@@ -111,7 +111,7 @@ public class MOTDCommands implements CommandExecutor {
      * Print the AB MOTD to the sender
      */
     public void printABMOTD(CommandSender sender) {
-		String abmotd = plugin.getConfig().getString("MBMOTD");
+		String abmotd = plugin.getConfig().getString("ABMOTD");
 		if (abmotd == null || abmotd.equals("")) {
 			sender.sendMessage(ChatColor.GREEN + "No Administrator Message Of The Day is set");
 		} else {
