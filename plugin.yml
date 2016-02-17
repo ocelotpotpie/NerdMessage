@@ -64,6 +64,10 @@ permissions:
     description: Access to set the Administrator MOTD
     default: op
 
+  nerdmessage.reload:
+    description: Access to reload the configuration file
+    default: op
+    
 commands:
   msg:
     aliases: [m, t, r, reply, tell]
@@ -127,3 +131,7 @@ commands:
   setabmotd:
     permission: nerdmessage.setabmotd
     description: Set the Administrator MOTD
+
+  nerdmessagereload:
+    permission: nerdmessage.reload
+    description: Reload the configuration file
