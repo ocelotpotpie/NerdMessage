@@ -9,6 +9,9 @@ import java.util.logging.Level;
 import nu.nerd.nerdmessage.commands.BroadcastCommands;
 import nu.nerd.nerdmessage.commands.ChatCommands;
 import nu.nerd.nerdmessage.commands.IgnoreCommands;
+import nu.nerd.nerdmessage.commands.MOTDCommands;
+import nu.nerd.nerdmessage.commands.OtherCommands;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -41,7 +44,9 @@ public class NerdMessage extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        jedisPool.destroy(); //clean up the pool of Redis connections
+    	if (jedisPool != null) {
+    		jedisPool.destroy(); //clean up the pool of Redis connections
+    	}
     }
 
 
@@ -52,6 +57,8 @@ public class NerdMessage extends JavaPlugin {
         ChatCommands chatCommands = new ChatCommands(this);
         IgnoreCommands ignoreCommands = new IgnoreCommands(this);
         BroadcastCommands broadcastCommands = new BroadcastCommands(this);
+        MOTDCommands motdCommands = new MOTDCommands(this);
+        OtherCommands otherCommands = new OtherCommands(this);
     }
 
 
@@ -63,6 +70,21 @@ public class NerdMessage extends JavaPlugin {
         this.saveDefaultConfig();
         this.alertThreshold = this.getConfig().getInt("alert_threshold", 3);
         this.serverName = this.getConfig().getString("server_name", null);
+    }
+    
+    
+    /*
+     * Reload the configuration file and redis
+     */
+    public void reload() {
+    	if (jedisPool != null) {
+    		jedisPool.destroy();
+    		jedisPool = null;
+    	}
+    	this.reloadConfig();
+        this.alertThreshold = this.getConfig().getInt("alert_threshold", 3);
+        this.serverName = this.getConfig().getString("server_name", null);
+    	establishRedisConnection();
     }
 
 

@@ -45,6 +45,29 @@ permissions:
     description: Access /o
     default: op
 
+  nerdmessage.motd:
+    description: Access to read the MOTD
+    default: op
+  nerdmessage.setmotd:
+    description: Access to set the MOTD
+    default: op
+  nerdmessage.mbmotd:
+    description: Access to read the Moderator MOTD
+    default: op
+  nerdmessage.setmbmotd:
+    description: Access to set the Moderator MOTD
+    default: op
+  nerdmessage.abmotd:
+    description: Access to read the Administrator MOTD
+    default: op
+  nerdmessage.setabmotd:
+    description: Access to set the Administrator MOTD
+    default: op
+
+  nerdmessage.reload:
+    description: Access to reload the configuration file
+    default: op
+    
 commands:
   msg:
     aliases: [m, t, r, reply, tell]
@@ -90,3 +113,25 @@ commands:
     permission: nerdmessage.globalbroadcast
     description: Broadcast a message to all online players on all servers.
 
+  motd:
+    permission: nerdmessage.motd
+    description: Display the current MOTD
+  setmotd:
+    permission: nerdmessage.setmotd
+    description: Set the MOTD
+  mbmotd:
+    permission: nerdmessage.mbmotd
+    description: Display the current Moderator MOTD
+  setmbmotd:
+    permission: nerdmessage.setmbmotd
+    description: Set the Moderator MOTD
+  abmotd:
+    permission: nerdmessage.abmotd
+    description: Display the current Administrator MOTD
+  setabmotd:
+    permission: nerdmessage.setabmotd
+    description: Set the Administrator MOTD
+
+  nerdmessagereload:
+    permission: nerdmessage.reload
+    description: Reload the configuration file
