@@ -19,12 +19,10 @@ Commands
 * `/mbg <message>` Global Mod Chat to all servers
 * `/abg <message>` Global Admin Chat to all servers
 * `/global-broadcast <message>` Broadcast a message to all online players on all servers.
-
 * `/motd` Display the current MOTD
 * `/setmotd <message>` Set the MOTD
 * `/mbmotd` Display the current Moderator MOTD
 * `/setmbmotd <message>` Set the Moderator MOTD
 * `/abmotd` Display the current Administrator MOTD
 * `/setabmotd <message>` Set the Administrator MOTD
-
 * `/nerdmessagereload` Reload the configuration file
