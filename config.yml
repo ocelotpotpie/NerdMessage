@@ -8,7 +8,7 @@ redis:
   enabled: false
   server: localhost
   password: null
-  timeout: 30
+  timeout: 3000
   port: 6379
   max_connections: 4
 
