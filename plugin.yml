@@ -15,6 +15,9 @@ permissions:
   nerdmessage.sarc:
     description: Allow a user to speak in italics
     default: true
+  nerdmessage.mail:
+    description: Access /mail
+    default: true
   nerdmessage.cmsg:
     default: op
     description: Send message to all users to get attention
@@ -112,6 +115,10 @@ commands:
   global-broadcast:
     permission: nerdmessage.globalbroadcast
     description: Broadcast a message to all online players on all servers.
+
+  mail:
+    permission: nerdmessage.mail
+    description: Send and recieve messages, even to offline players.
 
   motd:
     permission: nerdmessage.motd

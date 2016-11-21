@@ -19,6 +19,7 @@ public class NerdMessageListener implements Listener {
 
     public NerdMessageListener (NerdMessage plugin) {
         this.plugin = plugin;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
 
@@ -91,4 +92,6 @@ public class NerdMessageListener implements Listener {
             }
         }.runTaskLater(plugin, 40);
     }
+
+
 }

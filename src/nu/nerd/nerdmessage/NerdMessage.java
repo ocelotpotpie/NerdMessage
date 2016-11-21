@@ -1,5 +1,7 @@
 package nu.nerd.nerdmessage;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -10,8 +12,10 @@ import nu.nerd.nerdmessage.commands.BroadcastCommands;
 import nu.nerd.nerdmessage.commands.ChatCommands;
 import nu.nerd.nerdmessage.commands.IgnoreCommands;
 import nu.nerd.nerdmessage.commands.MOTDCommands;
+import nu.nerd.nerdmessage.commands.MailCommands;
 import nu.nerd.nerdmessage.commands.OtherCommands;
 
+import nu.nerd.nerdmessage.mail.MailHandler;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,25 +24,30 @@ import org.bukkit.scheduler.BukkitRunnable;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
 
 public class NerdMessage extends JavaPlugin {
 
 
+    public static NerdMessage instance;
     private List<NMUser> users = new CopyOnWriteArrayList<NMUser>();
     private HashMap<String, Integer> muteCounts = new HashMap<String, Integer>();
     private Integer alertThreshold;
     private String serverName;
     private JedisPool jedisPool;
+    private MySQLPool mySQLPool;
+    private MailHandler mailHandler;
 
 
     @Override
     public void onEnable() {
+        instance = this;
         loadConfig();
         establishRedisConnection();
+        mySQLPool = new MySQLPool(this, getConfig());
         registerCommands();
-        this.getServer().getPluginManager().registerEvents(new NerdMessageListener(this), this);
+        mailHandler = new MailHandler(this);
+        new NerdMessageListener(this);
     }
 
 
@@ -47,6 +56,9 @@ public class NerdMessage extends JavaPlugin {
     	if (jedisPool != null) {
     		jedisPool.destroy(); //clean up the pool of Redis connections
     	}
+        if (mySQLPool != null) {
+            mySQLPool.close(); //shut down the pool of MySQL connections
+        }
     }
 
 
@@ -54,11 +66,12 @@ public class NerdMessage extends JavaPlugin {
      * Register command executors
      */
     public void registerCommands() {
-        ChatCommands chatCommands = new ChatCommands(this);
-        IgnoreCommands ignoreCommands = new IgnoreCommands(this);
-        BroadcastCommands broadcastCommands = new BroadcastCommands(this);
-        MOTDCommands motdCommands = new MOTDCommands(this);
-        OtherCommands otherCommands = new OtherCommands(this);
+        new ChatCommands(this);
+        new IgnoreCommands(this);
+        new BroadcastCommands(this);
+        new MOTDCommands(this);
+        new OtherCommands(this);
+        new MailCommands(this);
     }
 
 
@@ -189,6 +202,23 @@ public class NerdMessage extends JavaPlugin {
      */
     public boolean crossServerEnabled() {
         return jedisPool != null;
+    }
+
+
+    /**
+     * Get a connection from the MySQL pool
+     * @throws SQLException
+     */
+    public Connection getSQLConnection() throws SQLException {
+        return mySQLPool.getConnection();
+    }
+
+
+    /**
+     * Get the mail handler instance
+     */
+    public MailHandler getMailHandler() {
+        return mailHandler;
     }
 
 
