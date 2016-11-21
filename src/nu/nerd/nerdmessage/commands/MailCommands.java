@@ -152,7 +152,7 @@ public class MailCommands implements CommandExecutor {
                 StringBuilder sb = new StringBuilder("");
                 for (int i = offset; i < offset+perPage && i < messages.size(); i++) {
                     MailMessage msg = messages.get(i);
-                    sb.append(String.format("%d)", i + 1));
+                    sb.append(String.format("%d) ", i + 1));
                     sb.append(String.format("(%s%s%s)", ChatColor.YELLOW, msg.getSourceServer(), ChatColor.WHITE));
                     sb.append(String.format(" [%s%s%s] ", ChatColor.RED, msg.getFromName(), ChatColor.WHITE));
                     sb.append(StringUtil.truncateEllipsis(msg.getBody(), 30));
