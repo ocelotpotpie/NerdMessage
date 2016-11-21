@@ -22,6 +22,8 @@ public class MailMessage {
     private boolean read;
     private boolean notified;
     private String sourceServer;
+    private String toName;
+    private String fromName;
 
 
     public MailMessage() {
@@ -33,6 +35,8 @@ public class MailMessage {
         read = false;
         notified = false;
         sourceServer = null;
+        toName = null;
+        fromName = null;
     }
 
 
@@ -80,6 +84,35 @@ public class MailMessage {
 
 
     /**
+     * Obtain a list of unread messages
+     * @param user the UUID of the player to check messages for
+     * @return List of messages
+     */
+    public static List<MailMessage> findUnread(UUID user) {
+        List<MailMessage> list = new ArrayList<>();
+        try {
+            Connection conn = NerdMessage.instance.getSQLConnection();
+            String sql = "SELECT message.*, u1.last_display_name AS from_name, u2.last_display_name AS to_name " +
+                    "FROM message INNER JOIN user u1 ON message.from=u1.uuid INNER JOIN user u2 on message.from=u2.uuid " +
+                    "WHERE `to`=? AND `read`=0;";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, user.toString());
+            ResultSet res = stmt.executeQuery();
+            if (res != null) {
+                while (res.next()) {
+                    MailMessage msg = buildObject(res);
+                    list.add(msg);
+                }
+            }
+            conn.close();
+        } catch (SQLException ex) {
+            NerdMessage.instance.getLogger().warning(String.format("Error querying messages: %s", ex.getMessage()));
+        }
+        return list;
+    }
+
+
+    /**
      * Obtain a list of new messages waiting for player notification
      * @param user the UUID of the player to check messages for
      * @return List of messages
@@ -116,6 +149,12 @@ public class MailMessage {
         msg.setRead(res.getBoolean("read"));
         msg.setNotified(res.getBoolean("notified"));
         msg.setSourceServer(res.getString("source_server"));
+        if (res.getString("to_name") != null) {
+            msg.setToName(res.getString("to_name"));
+        }
+        if (res.getString("from_name") != null) {
+            msg.setFromName(res.getString("from_name"));
+        }
         return msg;
     }
 
@@ -220,6 +259,26 @@ public class MailMessage {
 
     public void setSourceServer(String sourceServer) {
         this.sourceServer = sourceServer;
+    }
+
+
+    public String getToName() {
+        return toName;
+    }
+
+
+    public void setToName(String toName) {
+        this.toName = toName;
+    }
+
+
+    public String getFromName() {
+        return fromName;
+    }
+
+
+    public void setFromName(String fromName) {
+        this.fromName = fromName;
     }
 
 

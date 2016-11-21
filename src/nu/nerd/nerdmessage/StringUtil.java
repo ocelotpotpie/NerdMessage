@@ -62,4 +62,19 @@ public class StringUtil {
     }
 
 
+    /**
+     * Truncase a string to a given length and add an ellipsis if necessary
+     * @param str the string to truncate
+     * @param length the length in characters to truncate to
+     * @return the revised string
+     */
+    public static String truncateEllipsis(String str, int length) {
+        String newStr = str.substring(0, Math.min(str.length(), length));
+        if (str.length() > length) {
+            newStr = newStr + "...";
+        }
+        return newStr;
+    }
+
+
 }

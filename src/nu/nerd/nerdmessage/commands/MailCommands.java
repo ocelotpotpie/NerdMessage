@@ -12,6 +12,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.List;
+
 
 public class MailCommands implements CommandExecutor {
 
@@ -42,8 +44,12 @@ public class MailCommands implements CommandExecutor {
                 printHelp(sender);
                 return true;
             }
-            else if(args[0].equalsIgnoreCase("send")) {
+            else if (args[0].equalsIgnoreCase("send")) {
                 sendCommand(sender, args);
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("inbox")) {
+                inboxCommand(sender, args);
                 return true;
             }
 
@@ -82,10 +88,12 @@ public class MailCommands implements CommandExecutor {
      * /mail send command
      */
     private void sendCommand(final CommandSender sender, final String[] args) {
+
         if (args.length < 3) {
             sender.sendMessage(ChatColor.RED + "Usage: /mail send <user> <message>");
             return;
         }
+
         new BukkitRunnable() {
             public void run() {
                 try {
@@ -104,6 +112,58 @@ public class MailCommands implements CommandExecutor {
                 }
             }
         }.runTaskAsynchronously(plugin);
+
+    }
+
+
+    /**
+     * /mail inbox command
+     */
+    private void inboxCommand(final CommandSender sender, final String[] args) {
+
+        final int perPage = 5;
+        final Player player = (Player) sender;
+        int num = 1;
+        if (args.length == 2) {
+            try {
+                num = Integer.parseInt(args[1]);
+            } catch (NumberFormatException ex) {
+                num = 1;
+            }
+        }
+        final int page = num;
+
+        new BukkitRunnable() {
+            public void run() {
+
+                List<MailMessage> messages = MailMessage.findUnread(player.getUniqueId());
+                int pages = (messages.size() + perPage - 1) / perPage; //integer division
+                int offset = (page - 1) * perPage;
+
+                if (messages.size() == 0) {
+                    msgSync(sender, ChatColor.RED + "You have no messages.");
+                    return;
+                } else if (pages < page) {
+                    msgSync(sender, ChatColor.RED + "Invalid inbox page!");
+                    return;
+                }
+
+                msgSync(sender, String.format("%sInbox for %s: [ Page %d of %d ]", ChatColor.YELLOW, player.getName(), page, pages));
+                StringBuilder sb = new StringBuilder("");
+                for (int i = offset; i < offset+perPage && i < messages.size(); i++) {
+                    MailMessage msg = messages.get(i);
+                    sb.append(String.format("%d)", i + 1));
+                    sb.append(String.format("(%s%s%s)", ChatColor.YELLOW, msg.getSourceServer(), ChatColor.WHITE));
+                    sb.append(String.format(" [%s%s%s] ", ChatColor.RED, msg.getFromName(), ChatColor.WHITE));
+                    sb.append(StringUtil.truncateEllipsis(msg.getBody(), 30));
+                    sb.append("\n");
+                }
+                msgSync(sender, sb.toString());
+                msgSync(sender, String.format("%s/mail inbox <page>%s for more pages.", ChatColor.LIGHT_PURPLE, ChatColor.YELLOW));
+
+            }
+        }.runTaskAsynchronously(plugin);
+
     }
 
 
