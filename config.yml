@@ -19,6 +19,7 @@ mysql:
   url: "jdbc:mysql://localhost:3306/mail"
   username: archer
   password: guest
+  max_connections: 5
 
 
 # General Message of the day

@@ -22,6 +22,8 @@ public class MySQLPool {
         dataSource.setJdbcUrl(config.getString("mysql.url"));
         dataSource.setUsername(config.getString("mysql.username"));
         dataSource.setPassword(config.getString("mysql.password"));
+        dataSource.setMaximumPoolSize(config.getInt("max_connections", 5));
+        dataSource.setPoolName("NerdMessage");
         dataSource.addDataSourceProperty("cachePrepStmts", "true");
     }
 
