@@ -12,6 +12,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 
@@ -47,6 +49,9 @@ public class MailCommands implements CommandExecutor {
             else if (args[0].equalsIgnoreCase("send")) {
                 sendCommand(sender, args);
                 return true;
+            }
+            else if (args[0].equalsIgnoreCase("read")) {
+                readCommand(sender, args);
             }
             else if (args[0].equalsIgnoreCase("inbox")) {
                 inboxCommand(sender, args);
@@ -110,6 +115,62 @@ public class MailCommands implements CommandExecutor {
                 } catch (MailException ex) {
                     msgSync(sender, ChatColor.RED + "Error: Message could not be sent.");
                 }
+            }
+        }.runTaskAsynchronously(plugin);
+
+    }
+
+
+    /**
+     * /mail read command
+     */
+    private  void readCommand(final CommandSender sender, final String[] args) {
+
+        Integer id;
+
+        if (args[1].equals("")) {
+            sender.sendMessage(ChatColor.RED + "Usage /mail read <id>");
+            return;
+        }
+        try {
+            id = Integer.parseInt(args[1]);
+        } catch (ArithmeticException ex) {
+            sender.sendMessage(ChatColor.RED + "ID must be an integer.");
+            return;
+        }
+        if (id <= 0) {
+            sender.sendMessage(ChatColor.RED + "ID must be greater than zero.");
+            return;
+        }
+
+        final int index = id;
+        final Player player = (Player) sender;
+
+        new BukkitRunnable() {
+            public void run() {
+
+                List<MailMessage> messages = MailMessage.findUnread(player.getUniqueId());
+
+                if (messages.size() == 0) {
+                    msgSync(sender, ChatColor.RED + "You have no messages.");
+                    return;
+                }
+                if (messages.size() < index) {
+                    msgSync(sender, ChatColor.RED + "Invalid id!");
+                    return;
+                }
+
+                MailMessage message = messages.get(index - 1);
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, d MMM yyy HH:mm:ss z");
+                Date date = new Date(message.getDateSent());
+                String when = sdf.format(date);
+                StringBuilder sb = new StringBuilder("");
+                sb.append(String.format("%sFrom: %s%s\n", ChatColor.YELLOW, ChatColor.RED, message.getFromName()));
+                sb.append(String.format("%sSent: %s(%s%s%s) %s\n", ChatColor.YELLOW, ChatColor.WHITE, ChatColor.YELLOW, message.getSourceServer(), ChatColor.WHITE, when));
+                sb.append(message.getBody());
+                sb.append("\n");
+                msgSync(sender, sb.toString());
+
             }
         }.runTaskAsynchronously(plugin);
 

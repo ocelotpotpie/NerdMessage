@@ -84,6 +84,52 @@ public class MailMessage {
 
 
     /**
+     * Mark a message as read
+     * @param user the UUID of the user to work on
+     * @param index the number of the message in the list (starting with 1)
+     */
+    public static void flagRead(UUID user, int index) {
+        try {
+            Connection conn = NerdMessage.instance.getSQLConnection();
+            String sql = "SELECT `id` from message WHERE `to`=? AND `read`=0;";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, user.toString());
+            stmt.execute();
+            ResultSet res = stmt.executeQuery();
+            if (res != null) {
+                res.absolute(index - 1);
+                int rowId = res.getInt("id");
+                sql = "UPDATE message SET `read`=1 WHERE `id`=?;";
+                stmt = conn.prepareStatement(sql);
+                stmt.setInt(1, rowId);
+                stmt.execute();
+            }
+            conn.close();
+        } catch (SQLException ex) {
+            NerdMessage.instance.getLogger().warning(String.format("Error updating read state: %s", ex.getMessage()));
+        }
+    }
+
+
+    /**
+     * Mark all of a user's messages as read
+     * @param user the UUID of the user
+     */
+    public static void flagAllRead(UUID user) {
+        try {
+            Connection conn = NerdMessage.instance.getSQLConnection();
+            String sql = "UPDATE message SET `read`=1 WHERE `to`=? AND `read`=0;";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, user.toString());
+            stmt.executeUpdate();
+            conn.close();
+        } catch (SQLException ex) {
+            NerdMessage.instance.getLogger().warning(String.format("Error updating read state: %s", ex.getMessage()));
+        }
+    }
+
+
+    /**
      * Obtain a list of unread messages
      * @param user the UUID of the player to check messages for
      * @return List of messages
