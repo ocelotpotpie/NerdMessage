@@ -60,6 +60,9 @@ public class MailCommands implements CommandExecutor {
             else if (args[0].equalsIgnoreCase("clear")) {
                 clearCommand(sender);
             }
+            else if (args[0].equalsIgnoreCase("archive")) {
+                archiveCommand(sender, args);
+            }
 
         }
         return false;
@@ -76,6 +79,7 @@ public class MailCommands implements CommandExecutor {
         sender.sendMessage(String.format(fmt, "read <id>", "read messages by id."));
         sender.sendMessage(String.format(fmt, "inbox [<page>]", "read mail index."));
         sender.sendMessage(String.format(fmt, "clear", "clear all messages."));
+        sender.sendMessage(String.format(fmt, "archive <id>", "remove message <id> from inbox."));
     }
 
 
@@ -243,6 +247,50 @@ public class MailCommands implements CommandExecutor {
                 msgSync(sender, ChatColor.LIGHT_PURPLE + "All messages have been cleared.");
             }
         }.runTaskAsynchronously(plugin);
+    }
+
+
+    /**
+     * /mail archive command
+     */
+    private void archiveCommand(final CommandSender sender, final String[] args) {
+
+        Integer id;
+
+        if (args[1].equals("")) {
+            sender.sendMessage(ChatColor.RED + "Usage: /mail archive <id>");
+            return;
+        }
+        try {
+            id = Integer.parseInt(args[1]);
+        } catch (ArithmeticException ex) {
+            sender.sendMessage(ChatColor.RED + "ID must be an integer.");
+            return;
+        }
+        if (id <= 0) {
+            sender.sendMessage(ChatColor.RED + "ID must be greater than zero.");
+            return;
+        }
+
+        final int index = id;
+        final Player player = (Player) sender;
+
+        new BukkitRunnable() {
+            public void run() {
+                List<MailMessage> messages = MailMessage.findUnread(player.getUniqueId());
+                if (messages.size() == 0) {
+                    msgSync(sender, ChatColor.RED + "You have no messages to delete");
+                }
+                else if (messages.size() < index) {
+                    msgSync(sender, String.format("%sID must be less than %d.", ChatColor.RED, messages.size()+1));
+                }
+                else {
+                    MailMessage.flagRead(player.getUniqueId(), index);
+                    msgSync(sender, ChatColor.RED + "Message archived");
+                }
+            }
+        }.runTaskAsynchronously(plugin);
+
     }
 
 

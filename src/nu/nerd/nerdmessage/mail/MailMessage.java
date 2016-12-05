@@ -97,7 +97,7 @@ public class MailMessage {
             stmt.execute();
             ResultSet res = stmt.executeQuery();
             if (res != null) {
-                res.absolute(index - 1);
+                res.absolute(index);
                 int rowId = res.getInt("id");
                 sql = "UPDATE message SET `read`=1 WHERE `id`=?;";
                 stmt = conn.prepareStatement(sql);
