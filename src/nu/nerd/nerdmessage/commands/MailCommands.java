@@ -57,6 +57,9 @@ public class MailCommands implements CommandExecutor {
                 inboxCommand(sender, args);
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("clear")) {
+                clearCommand(sender);
+            }
 
         }
         return false;
@@ -72,6 +75,7 @@ public class MailCommands implements CommandExecutor {
         sender.sendMessage(String.format(fmt, "send <player> <message>", "send <message> to <player>."));
         sender.sendMessage(String.format(fmt, "read <id>", "read messages by id."));
         sender.sendMessage(String.format(fmt, "inbox [<page>]", "read mail index."));
+        sender.sendMessage(String.format(fmt, "clear", "clear all messages."));
     }
 
 
@@ -225,6 +229,20 @@ public class MailCommands implements CommandExecutor {
             }
         }.runTaskAsynchronously(plugin);
 
+    }
+
+
+    /**
+     * /mail clear command
+     */
+    private void clearCommand(final CommandSender sender) {
+        final Player player = (Player) sender;
+        new BukkitRunnable() {
+            public void run() {
+                MailMessage.flagAllRead(player.getUniqueId());
+                msgSync(sender, ChatColor.LIGHT_PURPLE + "All messages have been cleared.");
+            }
+        }.runTaskAsynchronously(plugin);
     }
 
 
