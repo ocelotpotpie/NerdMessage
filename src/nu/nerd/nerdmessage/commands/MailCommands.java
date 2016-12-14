@@ -63,6 +63,9 @@ public class MailCommands implements CommandExecutor {
             else if (args[0].equalsIgnoreCase("archive")) {
                 archiveCommand(sender, args);
             }
+            else if (args[0].equalsIgnoreCase("thread")) {
+                threadCommand(sender, args);
+            }
 
         }
         return false;
@@ -77,9 +80,10 @@ public class MailCommands implements CommandExecutor {
         String fmt = "- " + ChatColor.GREEN + "/mail %s" + ChatColor.WHITE + ": %s";
         sender.sendMessage(String.format(fmt, "send <player> <message>", "send <message> to <player>."));
         sender.sendMessage(String.format(fmt, "read <id>", "read messages by id."));
-        sender.sendMessage(String.format(fmt, "inbox [<page>]", "read mail index."));
+        sender.sendMessage(String.format(fmt, "inbox [page]", "read mail index."));
         sender.sendMessage(String.format(fmt, "clear", "clear all messages."));
         sender.sendMessage(String.format(fmt, "archive <id>", "remove message <id> from inbox."));
+        sender.sendMessage(String.format(fmt, "thread <user> [page]", "thread between you and <user>."));
     }
 
 
@@ -287,6 +291,76 @@ public class MailCommands implements CommandExecutor {
                 else {
                     MailMessage.flagRead(player.getUniqueId(), index);
                     msgSync(sender, ChatColor.RED + "Message archived");
+                }
+            }
+        }.runTaskAsynchronously(plugin);
+
+    }
+
+
+    /**
+     * /mail thread command
+     */
+    private void threadCommand(final CommandSender sender, final String[] args) {
+
+        if (args.length < 2 || args[1].equals("")) {
+            sender.sendMessage(ChatColor.RED + "Usage: /mail thread <user> [page]");
+            return;
+        }
+        int num = 1;
+        if (args.length == 3) {
+            try {
+                num = Integer.parseInt(args[2]);
+            } catch (NumberFormatException ex) {
+                num = 1;
+            }
+        }
+
+        final String username = args[1];
+        final Player player = (Player) sender;
+        final int perPage = 4;
+        final int page = num;
+
+        new BukkitRunnable() {
+            public void run() {
+                try {
+
+                    MailUser otherUser = new MailUser(username);
+                    List<MailMessage> messages = MailMessage.findThread(player.getUniqueId(), otherUser.getUuid());
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+
+                    int pages = (messages.size() + perPage - 1) / perPage; //integer division
+                    int offset = (page - 1) * perPage;
+                    if (messages.size() == 0) {
+                        msgSync(sender, ChatColor.RED + "You have no messages to or from that user.");
+                        return;
+                    } else if (pages < page) {
+                        msgSync(sender, ChatColor.RED + "Invalid thread page!");
+                        return;
+                    }
+
+                    StringBuilder sb = new StringBuilder("");
+                    sb.append(String.format("%sThread for %s and %s: [ Page %d of %d ]\n", ChatColor.YELLOW, player.getName(), otherUser.getDisplayname(), page, pages));
+                    sb.append(String.format("%s---\n", ChatColor.GRAY));
+                    for (int i = offset; i < offset+perPage && i < messages.size(); i++) {
+                        MailMessage msg = messages.get(i);
+                        Date date = new Date(msg.getDateSent());
+                        String when = sdf.format(date);
+                        String fromtag = String.format("%s -> %s%s", msg.getFromName(), msg.getToName(), ChatColor.YELLOW);
+                        if (msg.getFrom().equals(player.getUniqueId())) {
+                            fromtag = ChatColor.GREEN + fromtag;
+                        } else {
+                            fromtag = ChatColor.RED + fromtag;
+                        }
+                        sb.append(String.format("%s[%s %s]%s\n", ChatColor.YELLOW, fromtag, when, ChatColor.RESET));
+                        sb.append(msg.getBody());
+                        sb.append(String.format("\n%s---\n", ChatColor.GRAY));
+                    }
+                    sb.append(String.format("%s/mail thread %s <page>%s for more pages.\n", ChatColor.LIGHT_PURPLE, otherUser.getDisplayname(), ChatColor.YELLOW));
+                    msgSync(sender, sb.toString());
+
+                } catch (MailException ex) {
+                    msgSync(sender, ChatColor.RED + "Error: Messages could not be retrieved.");
                 }
             }
         }.runTaskAsynchronously(plugin);

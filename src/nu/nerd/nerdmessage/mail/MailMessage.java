@@ -139,7 +139,7 @@ public class MailMessage {
         try {
             Connection conn = NerdMessage.instance.getSQLConnection();
             String sql = "SELECT message.*, u1.last_display_name AS from_name, u2.last_display_name AS to_name " +
-                    "FROM message INNER JOIN user u1 ON message.from=u1.uuid INNER JOIN user u2 on message.from=u2.uuid " +
+                    "FROM message INNER JOIN user u1 ON message.from=u1.uuid INNER JOIN user u2 on message.to=u2.uuid " +
                     "WHERE `to`=? AND `read`=0;";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, user.toString());
@@ -180,6 +180,39 @@ public class MailMessage {
             conn.close();
         } catch (SQLException ex) {
             NerdMessage.instance.getLogger().warning(String.format("Error querying messages: %s", ex.getMessage()));
+        }
+        return list;
+    }
+
+
+    /**
+     * Obtain a list of all messages between two users
+     * @param user1 the UUID of the first user
+     * @param user2 the UUID of the second user
+     * @return List of messages
+     */
+    public static List<MailMessage> findThread(UUID user1, UUID user2) {
+        List<MailMessage> list = new ArrayList<>();
+        try {
+            Connection conn = NerdMessage.instance.getSQLConnection();
+            String sql = "SELECT message.*, u1.last_display_name AS from_name, u2.last_display_name AS to_name " +
+                    "FROM message INNER JOIN user u1 ON message.from=u1.uuid INNER JOIN user u2 on message.to=u2.uuid " +
+                    "WHERE (`to`=? AND `from`=?) OR (`to`=? AND `from`=?) ORDER BY `date_sent` DESC;";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, user1.toString());
+            stmt.setString(2, user2.toString());
+            stmt.setString(3, user2.toString());
+            stmt.setString(4, user1.toString());
+            ResultSet res = stmt.executeQuery();
+            if (res != null) {
+                while (res.next()) {
+                    MailMessage msg = buildObject(res);
+                    list.add(msg);
+                }
+            }
+            conn.close();
+        } catch (SQLException ex) {
+            NerdMessage.instance.getLogger().warning(String.format("Error querying message thread: %s", ex.getMessage()));
         }
         return list;
     }
