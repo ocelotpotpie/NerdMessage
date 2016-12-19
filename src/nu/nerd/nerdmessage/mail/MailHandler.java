@@ -11,7 +11,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.UUID;
 
 
@@ -24,7 +23,6 @@ public class MailHandler implements Listener {
     public MailHandler(NerdMessage plugin) {
         this.plugin = plugin;
         if (!plugin.getConfig().getBoolean("mysql.enabled")) return;
-        createTables();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -97,41 +95,6 @@ public class MailHandler implements Listener {
         }
         if (notified) {
             MailMessage.flagNotified(recipient);
-        }
-    }
-
-
-    /**
-     * Load the database schema if the tables don't exist yet
-     */
-    private void createTables() {
-        try {
-            Connection conn = plugin.getSQLConnection();
-            if (conn == null) return;
-            String message = "CREATE TABLE IF NOT EXISTS `message` (" +
-                    "`id` mediumint(9) NOT NULL AUTO_INCREMENT," +
-                    "`to` varchar(36) NOT NULL," +
-                    "`from` varchar(36) NOT NULL," +
-                    "`body` text NOT NULL," +
-                    "`date_sent` bigint(20) NOT NULL," +
-                    "`read` bit(1) DEFAULT NULL," +
-                    "`notified` bit(1) DEFAULT NULL," +
-                    "`source_server` varchar(32) DEFAULT NULL," +
-                    "PRIMARY KEY (`id`)" +
-                    ") ENGINE=InnoDB DEFAULT CHARSET=latin1;";
-            String user = "CREATE TABLE IF NOT EXISTS `user` (" +
-                    "`uuid` varchar(36) NOT NULL," +
-                    "`last_username` varchar(16) NOT NULL," +
-                    "`email` varchar(255) DEFAULT NULL," +
-                    "`last_display_name` varchar(16) DEFAULT NULL," +
-                    "PRIMARY KEY (`uuid`)" +
-                    ") ENGINE=InnoDB DEFAULT CHARSET=latin1;";
-            Statement stmt = conn.createStatement();
-            stmt.executeUpdate(message);
-            stmt.executeUpdate(user);
-            conn.close();
-        } catch (SQLException ex) {
-            plugin.getLogger().warning("Error creating database tables: " + ex.getMessage());
         }
     }
 

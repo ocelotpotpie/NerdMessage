@@ -1,20 +1,31 @@
 package nu.nerd.nerdmessage.mail;
 
+import com.avaje.ebean.Query;
+import com.avaje.ebean.validation.NotNull;
 import nu.nerd.nerdmessage.NerdMessage;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.persistence.*;
 import java.util.UUID;
 
 
+@Entity()
+@Table(name="user")
 public class MailUser {
 
 
+    @Id
+    @Column(name="uuid")
     private UUID uuid;
+
+    @NotNull
+    @Column(name="last_username")
     private String username;
+
+    @NotNull
+    @Column(name="last_display_name")
     private String displayname;
+
+    @Column(name="email")
     private String email;
 
 
@@ -26,49 +37,21 @@ public class MailUser {
     }
 
 
-    public MailUser(String name) throws MailException {
-        this();
-        try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "SELECT * FROM user WHERE last_username=? LIMIT 1;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, name.toLowerCase());
-            ResultSet res = stmt.executeQuery();
-            if (res != null) {
-                res.first();
-                this.uuid = UUID.fromString(res.getString("uuid"));
-                this.username = res.getString("last_username");
-                this.displayname = res.getString("last_display_name");
-                this.email = res.getString("email");
-            }
-            conn.close();
-        } catch (SQLException ex) {
-            NerdMessage.instance.getLogger().warning(String.format("Error retrieving user from database for name %s: %s", name, ex.getMessage()));
-            throw new MailException("Could not retrieve user information.");
+    public static MailUser find(String name) throws MailException {
+        Query<MailUser> query = NerdMessage.instance.getDatabase().find(MailUser.class).where().ieq("username", name).query();
+        if (query != null) {
+            return query.findUnique();
         }
+        throw new MailException("Could not retrieve user information.");
     }
 
 
-    public MailUser(UUID uuid) throws MailException {
-        this();
-        try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "SELECT * FROM user WHERE uuid=?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, uuid.toString());
-            ResultSet res = stmt.executeQuery();
-            if (res != null) {
-                res.first();
-                this.uuid = UUID.fromString(res.getString("uuid"));
-                this.username = res.getString("last_username");
-                this.displayname = res.getString("last_display_name");
-                this.email = res.getString("email");
-            }
-            conn.close();
-        } catch (SQLException ex) {
-            NerdMessage.instance.getLogger().warning(String.format("Error retrieving user from database for UUID %s: %s", uuid.toString(), ex.getMessage()));
-            throw new MailException("Could not retrieve user information.");
+    public static MailUser find(UUID uuid) throws MailException {
+        Query<MailUser> query = NerdMessage.instance.getDatabase().find(MailUser.class).where().eq("uuid", uuid).query();
+        if (query != null) {
+            return query.findUnique();
         }
+        throw new MailException("Could not retrieve user information.");
     }
 
 
@@ -84,6 +67,11 @@ public class MailUser {
 
     public String getDisplayname() {
         return displayname;
+    }
+
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
 
@@ -108,19 +96,17 @@ public class MailUser {
 
 
     public void save() {
-        try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "UPDATE user SET last_username=?, last_display_name=?, email=? WHERE uuid=?;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, this.username.toLowerCase());
-            stmt.setString(2, this.displayname);
-            stmt.setString(3, this.email);
-            stmt.setString(4, this.uuid.toString());
-            stmt.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
-            NerdMessage.instance.getLogger().warning(String.format("Error saving user record: %s", ex.getMessage()));
-        }
+        NerdMessage.instance.getDatabase().save(this);
+    }
+
+
+    public void update() {
+        NerdMessage.instance.getDatabase().update(this);
+    }
+
+
+    public void delete() {
+        NerdMessage.instance.getDatabase().delete(this);
     }
 
 

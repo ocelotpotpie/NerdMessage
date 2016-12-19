@@ -114,10 +114,10 @@ public class MailCommands implements CommandExecutor {
         new BukkitRunnable() {
             public void run() {
                 try {
-                    MailUser to = new MailUser(args[1]);
-                    MailUser from = new MailUser(sender.getName());
+                    MailUser to = MailUser.find(args[1]);
+                    MailUser from = MailUser.find(sender.getName());
                     String msg = StringUtil.join(args, 2);
-                    if (to.getUuid() == null) {
+                    if (to == null || to.getUuid() == null) {
                         msgSync(sender, String.format("%sThe player '%s' could not be found.", ChatColor.RED, args[1]));
                     } else {
                         MailMessage.send(from, to, msg);
@@ -140,7 +140,7 @@ public class MailCommands implements CommandExecutor {
 
         Integer id;
 
-        if (args[1].equals("")) {
+        if (args.length == 0 || args[1].equals("")) {
             sender.sendMessage(ChatColor.RED + "Usage /mail read <id>");
             return;
         }
@@ -325,7 +325,7 @@ public class MailCommands implements CommandExecutor {
             public void run() {
                 try {
 
-                    MailUser otherUser = new MailUser(username);
+                    MailUser otherUser = MailUser.find(username);
                     List<MailMessage> messages = MailMessage.findThread(player.getUniqueId(), otherUser.getUuid());
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
 
@@ -360,7 +360,7 @@ public class MailCommands implements CommandExecutor {
                     msgSync(sender, sb.toString());
 
                 } catch (MailException ex) {
-                    msgSync(sender, ChatColor.RED + "Error: Messages could not be retrieved.");
+                    msgSync(sender, ChatColor.RED + "You have no messages to or from that user.");
                 }
             }
         }.runTaskAsynchronously(plugin);

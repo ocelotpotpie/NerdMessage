@@ -1,33 +1,63 @@
 package nu.nerd.nerdmessage.mail;
 
 
+import com.avaje.ebean.EbeanServer;
+import com.avaje.ebean.ExpressionFactory;
+import com.avaje.ebean.Query;
+import com.avaje.ebean.SqlUpdate;
+import com.avaje.ebean.validation.NotNull;
 import nu.nerd.nerdmessage.NerdMessage;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Entity()
+@Table(name="`message`")
 public class MailMessage {
 
 
+    @Id
     private int id;
+
+    @NotNull
+    @Column(name="`to`")
     private UUID to;
+
+    @NotNull
+    @Column(name="`from`")
     private UUID from;
+
+    @NotNull
+    @Column(name="`body`", columnDefinition="TEXT")
     private String body;
+
+    @NotNull
+    @Column(name="`date_sent`")
     private long dateSent;
+
+    @Column(name="`read`", columnDefinition = "BIT(1)")
     private boolean read;
+
+    @Column(name="`notified`", columnDefinition = "BIT(1)")
     private boolean notified;
+
+    @Column(name="`source_server`")
     private String sourceServer;
-    private String toName;
-    private String fromName;
+
+    @Transient
+    @ManyToOne()
+    @JoinColumn(name="`from`", insertable = false, updatable = false)
+    private MailUser fromUser;
+
+    @Transient
+    @ManyToOne()
+    @JoinColumn(name="`to`", insertable = false, updatable = false)
+    private MailUser toUser;
 
 
     public MailMessage() {
-        id = 0;
         to = null;
         from = null;
         body = null;
@@ -35,8 +65,8 @@ public class MailMessage {
         read = false;
         notified = false;
         sourceServer = null;
-        toName = null;
-        fromName = null;
+        fromUser = null;
+        toUser = null;
     }
 
 
@@ -48,17 +78,16 @@ public class MailMessage {
      */
     public static void send(MailUser from, MailUser to, String msg) throws MailException {
         try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "INSERT INTO message (`to`, `from`, `body`, `date_sent`, `read`, `notified`, `source_server`) VALUES (?, ?, ?, ?, 0, 0, ?);";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, to.getUuid().toString());
-            stmt.setString(2, from.getUuid().toString());
-            stmt.setString(3, msg);
-            stmt.setLong(4, System.currentTimeMillis());
-            stmt.setString(5, NerdMessage.instance.getServerName());
-            stmt.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
+            MailMessage message = new MailMessage();
+            message.setTo(to.getUuid());
+            message.setFrom(from.getUuid());
+            message.setBody(msg);
+            message.setDateSent(System.currentTimeMillis());
+            message.setRead(false);
+            message.setNotified(false);
+            message.setSourceServer(NerdMessage.instance.getServerName());
+            message.save();
+        } catch (Exception ex) {
             NerdMessage.instance.getLogger().warning(String.format("Error sending message to player %s: %s", to.getUsername(), ex.getMessage()));
             throw new MailException("Message could not be sent.");
         }
@@ -71,13 +100,11 @@ public class MailMessage {
      */
     public static void flagNotified(UUID user) {
         try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "UPDATE message SET `notified`=1 WHERE `to`=? AND `notified`=0;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, user.toString());
-            stmt.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
+            EbeanServer db = NerdMessage.instance.getDatabase();
+            SqlUpdate update = db.createSqlUpdate("UPDATE message SET `notified`=1 WHERE `to`=:to AND `notified`=0;");
+            update.setParameter("to", user.toString());
+            update.execute();
+        } catch (Exception ex) {
             NerdMessage.instance.getLogger().warning(String.format("Error updating notified state: %s", ex.getMessage()));
         }
     }
@@ -90,22 +117,13 @@ public class MailMessage {
      */
     public static void flagRead(UUID user, int index) {
         try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "SELECT `id` from message WHERE `to`=? AND `read`=0;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, user.toString());
-            stmt.execute();
-            ResultSet res = stmt.executeQuery();
-            if (res != null) {
-                res.absolute(index);
-                int rowId = res.getInt("id");
-                sql = "UPDATE message SET `read`=1 WHERE `id`=?;";
-                stmt = conn.prepareStatement(sql);
-                stmt.setInt(1, rowId);
-                stmt.execute();
+            List<MailMessage> messages = findUnread(user);
+            if (messages.size() > 0) {
+                MailMessage message = messages.get(index - 1);
+                message.setRead(true);
+                message.update();
             }
-            conn.close();
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             NerdMessage.instance.getLogger().warning(String.format("Error updating read state: %s", ex.getMessage()));
         }
     }
@@ -117,13 +135,11 @@ public class MailMessage {
      */
     public static void flagAllRead(UUID user) {
         try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "UPDATE message SET `read`=1 WHERE `to`=? AND `read`=0;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, user.toString());
-            stmt.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
+            EbeanServer db = NerdMessage.instance.getDatabase();
+            SqlUpdate update = db.createSqlUpdate("UPDATE message SET `read`=1 WHERE `to`=:to AND `read`=0;");
+            update.setParameter("to", user.toString());
+            update.execute();
+        } catch (Exception ex) {
             NerdMessage.instance.getLogger().warning(String.format("Error updating read state: %s", ex.getMessage()));
         }
     }
@@ -137,21 +153,12 @@ public class MailMessage {
     public static List<MailMessage> findUnread(UUID user) {
         List<MailMessage> list = new ArrayList<>();
         try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "SELECT message.*, u1.last_display_name AS from_name, u2.last_display_name AS to_name " +
-                    "FROM message INNER JOIN user u1 ON message.from=u1.uuid INNER JOIN user u2 on message.to=u2.uuid " +
-                    "WHERE `to`=? AND `read`=0;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, user.toString());
-            ResultSet res = stmt.executeQuery();
-            if (res != null) {
-                while (res.next()) {
-                    MailMessage msg = buildObject(res);
-                    list.add(msg);
-                }
+            EbeanServer db = NerdMessage.instance.getDatabase();
+            Query<MailMessage> query = db.find(MailMessage.class).where().ieq("to", user.toString()).eq("read", 0).query();
+            if (query != null) {
+                list = query.findList();
             }
-            conn.close();
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             NerdMessage.instance.getLogger().warning(String.format("Error querying messages: %s", ex.getMessage()));
         }
         return list;
@@ -166,19 +173,12 @@ public class MailMessage {
     public static List<MailMessage> findUnnotified(UUID user) {
         List<MailMessage> list = new ArrayList<>();
         try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "SELECT * FROM message WHERE `to`=? AND `notified`=0;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, user.toString());
-            ResultSet res = stmt.executeQuery();
-            if (res != null) {
-                while (res.next()) {
-                    MailMessage msg = buildObject(res);
-                    list.add(msg);
-                }
+            EbeanServer db = NerdMessage.instance.getDatabase();
+            Query<MailMessage> query = db.find(MailMessage.class).where().ieq("to", user.toString()).eq("notified", 0).query();
+            if (query != null) {
+                list = query.findList();
             }
-            conn.close();
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             NerdMessage.instance.getLogger().warning(String.format("Error querying messages: %s", ex.getMessage()));
         }
         return list;
@@ -194,70 +194,34 @@ public class MailMessage {
     public static List<MailMessage> findThread(UUID user1, UUID user2) {
         List<MailMessage> list = new ArrayList<>();
         try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "SELECT message.*, u1.last_display_name AS from_name, u2.last_display_name AS to_name " +
-                    "FROM message INNER JOIN user u1 ON message.from=u1.uuid INNER JOIN user u2 on message.to=u2.uuid " +
-                    "WHERE (`to`=? AND `from`=?) OR (`to`=? AND `from`=?) ORDER BY `date_sent` DESC;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, user1.toString());
-            stmt.setString(2, user2.toString());
-            stmt.setString(3, user2.toString());
-            stmt.setString(4, user1.toString());
-            ResultSet res = stmt.executeQuery();
-            if (res != null) {
-                while (res.next()) {
-                    MailMessage msg = buildObject(res);
-                    list.add(msg);
-                }
+            EbeanServer db = NerdMessage.instance.getDatabase();
+            ExpressionFactory expr = db.getExpressionFactory();
+            Query<MailMessage> query = db.find(MailMessage.class).where().or(
+                    expr.and(expr.eq("to", user1), expr.eq("from", user2)),
+                    expr.and(expr.eq("to", user2), expr.eq("from", user1))
+            ).orderBy().desc("dateSent");
+            if (query != null) {
+                list = query.findList();
             }
-            conn.close();
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             NerdMessage.instance.getLogger().warning(String.format("Error querying message thread: %s", ex.getMessage()));
         }
         return list;
     }
 
 
-    public static MailMessage buildObject(ResultSet res) throws SQLException {
-        MailMessage msg = new MailMessage();
-        msg.setId(res.getInt("id"));
-        msg.setTo(UUID.fromString(res.getString("to")));
-        msg.setFrom(UUID.fromString(res.getString("from")));
-        msg.setBody(res.getString("body"));
-        msg.setDateSent(res.getLong("date_sent"));
-        msg.setRead(res.getBoolean("read"));
-        msg.setNotified(res.getBoolean("notified"));
-        msg.setSourceServer(res.getString("source_server"));
-        if (res.getString("to_name") != null) {
-            msg.setToName(res.getString("to_name"));
-        }
-        if (res.getString("from_name") != null) {
-            msg.setFromName(res.getString("from_name"));
-        }
-        return msg;
+    public void save() {
+        NerdMessage.instance.getDatabase().save(this);
     }
 
 
-    /**
-     * Persist the object to the database
-     */
-    public void save() {
-        try {
-            Connection conn = NerdMessage.instance.getSQLConnection();
-            String sql = "UPDATE message SET to=?, from=?, body=?, date_sent=?, read=?, notified=?, source_server=? WHERE id=?;";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, this.to.toString());
-            stmt.setString(2, this.from.toString());
-            stmt.setString(3, this.body);
-            stmt.setLong(4, this.dateSent);
-            stmt.setBoolean(5, this.read);
-            stmt.setBoolean(6, this.notified);
-            stmt.setString(7, this.sourceServer);
-            stmt.executeUpdate();
-            conn.close();
-        } catch (SQLException ex) {
-            NerdMessage.instance.getLogger().warning(String.format("Error saving message record: %s", ex.getMessage()));
-        }
+    public void update() {
+        NerdMessage.instance.getDatabase().update(this);
+    }
+
+
+    public void delete() {
+        NerdMessage.instance.getDatabase().delete(this);
     }
 
 
@@ -341,23 +305,33 @@ public class MailMessage {
     }
 
 
-    public String getToName() {
-        return toName;
+    public MailUser getFromUser() {
+        return fromUser;
     }
 
 
-    public void setToName(String toName) {
-        this.toName = toName;
+    public MailUser getToUser() {
+        return toUser;
+    }
+
+
+    public void setFromUser(MailUser fromUser) {
+        this.fromUser = fromUser;
+    }
+
+
+    public void setToUser(MailUser toUser) {
+        this.toUser = toUser;
+    }
+
+
+    public String getToName() {
+        return (toUser == null) ? null : toUser.getDisplayname();
     }
 
 
     public String getFromName() {
-        return fromName;
-    }
-
-
-    public void setFromName(String fromName) {
-        this.fromName = fromName;
+        return (fromUser == null) ? null : fromUser.getDisplayname();
     }
 
 

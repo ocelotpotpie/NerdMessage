@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
+import com.avaje.ebean.EbeanServer;
 import nu.nerd.nerdmessage.commands.BroadcastCommands;
 import nu.nerd.nerdmessage.commands.ChatCommands;
 import nu.nerd.nerdmessage.commands.IgnoreCommands;
@@ -35,7 +36,7 @@ public class NerdMessage extends JavaPlugin {
     private Integer alertThreshold;
     private String serverName;
     private JedisPool jedisPool;
-    private MySQLPool mySQLPool;
+    private MySQLHandler mySQLHandler;
     private MailHandler mailHandler;
 
 
@@ -44,7 +45,7 @@ public class NerdMessage extends JavaPlugin {
         instance = this;
         loadConfig();
         establishRedisConnection();
-        mySQLPool = new MySQLPool(this, getConfig());
+        mySQLHandler = new MySQLHandler(this, getConfig());
         registerCommands();
         mailHandler = new MailHandler(this);
         new NerdMessageListener(this);
@@ -56,8 +57,8 @@ public class NerdMessage extends JavaPlugin {
     	if (jedisPool != null) {
     		jedisPool.destroy(); //clean up the pool of Redis connections
     	}
-        if (mySQLPool != null) {
-            mySQLPool.close(); //shut down the pool of MySQL connections
+        if (mySQLHandler != null) {
+            mySQLHandler.close(); //shut down the pool of MySQL connections
         }
     }
 
@@ -210,7 +211,15 @@ public class NerdMessage extends JavaPlugin {
      * @throws SQLException
      */
     public Connection getSQLConnection() throws SQLException {
-        return mySQLPool.getConnection();
+        return mySQLHandler.getConnection();
+    }
+
+
+    /**
+     * Get the eBean ORM instance
+     */
+    public EbeanServer getDatabase() {
+        return mySQLHandler.getDatabase();
     }
 
 
