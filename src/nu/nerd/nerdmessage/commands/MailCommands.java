@@ -146,7 +146,7 @@ public class MailCommands implements CommandExecutor {
         }
         try {
             id = Integer.parseInt(args[1]);
-        } catch (ArithmeticException ex) {
+        } catch (ArithmeticException | NumberFormatException ex) {
             sender.sendMessage(ChatColor.RED + "ID must be an integer.");
             return;
         }
@@ -267,7 +267,7 @@ public class MailCommands implements CommandExecutor {
         }
         try {
             id = Integer.parseInt(args[1]);
-        } catch (ArithmeticException ex) {
+        } catch (ArithmeticException | NumberFormatException ex) {
             sender.sendMessage(ChatColor.RED + "ID must be an integer.");
             return;
         }
@@ -326,6 +326,11 @@ public class MailCommands implements CommandExecutor {
                 try {
 
                     MailUser otherUser = MailUser.find(username);
+                    if (otherUser == null) {
+                        msgSync(sender, String.format("%sThe player '%s' could not be found.", ChatColor.RED, username));
+                        return;
+                    }
+
                     List<MailMessage> messages = MailMessage.findThread(player.getUniqueId(), otherUser.getUuid());
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
 
