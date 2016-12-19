@@ -37,6 +37,14 @@ public class MailUser {
     }
 
 
+    public MailUser(UUID uuid, String username, String displayname) {
+        this();
+        this.uuid = uuid;
+        this.username = username;
+        this.displayname = displayname;
+    }
+
+
     public static MailUser find(String name) throws MailException {
         Query<MailUser> query = NerdMessage.instance.getDatabase().find(MailUser.class).where().ieq("username", name).query();
         if (query != null) {

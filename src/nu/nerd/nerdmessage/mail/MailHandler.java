@@ -1,5 +1,6 @@
 package nu.nerd.nerdmessage.mail;
 
+import com.avaje.ebean.Query;
 import nu.nerd.nerdmessage.NerdMessage;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -8,9 +9,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.UUID;
 
 
@@ -41,17 +39,19 @@ public class MailHandler implements Listener {
         new BukkitRunnable() {
             public void run() {
                 try {
-                    Connection conn = plugin.getSQLConnection();
-                    String sql = "INSERT INTO `user` (uuid, last_username, last_display_name, email) VALUES (?, ?, ?, NULL) ON DUPLICATE KEY UPDATE last_username=?, last_display_name=?;";
-                    PreparedStatement stmt = conn.prepareStatement(sql);
-                    stmt.setString(1, player.getUniqueId().toString());
-                    stmt.setString(2, player.getName().toLowerCase());
-                    stmt.setString(3, player.getDisplayName());
-                    stmt.setString(4, player.getName().toLowerCase());
-                    stmt.setString(5, player.getDisplayName());
-                    stmt.executeUpdate();
-                    conn.close();
-                } catch (SQLException ex) {
+                    Query<MailUser> query = plugin.getDatabase().find(MailUser.class).where().eq("uuid", player.getUniqueId().toString()).query();
+                    if (query != null) {
+                        MailUser user = query.findUnique();
+                        if (user != null) {
+                            user.setUsername(player.getName().toLowerCase());
+                            user.setDisplayname(player.getDisplayName());
+                            user.update();
+                        } else {
+                            user = new MailUser(player.getUniqueId(), player.getName().toLowerCase(), player.getDisplayName());
+                            user.save();
+                        }
+                    }
+                } catch (Exception ex) {
                     plugin.getLogger().warning(String.format("Error updating user table for player %s: %s", player.getName(), ex.getMessage()));
                 }
             }
