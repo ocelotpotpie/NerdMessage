@@ -48,7 +48,7 @@ public class MailUser {
     public static MailUser find(String name) throws MailException {
         Query<MailUser> query = NerdMessage.instance.getDatabase().find(MailUser.class).where().ieq("username", name).query();
         if (query != null) {
-            return query.findUnique();
+            return query.setMaxRows(1).findUnique();
         }
         throw new MailException("Could not retrieve user information.");
     }
