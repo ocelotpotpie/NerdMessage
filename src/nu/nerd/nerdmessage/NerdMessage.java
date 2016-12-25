@@ -58,6 +58,7 @@ public class NerdMessage extends JavaPlugin {
     		jedisPool.destroy(); //clean up the pool of Redis connections
     	}
         if (mySQLHandler != null) {
+            mailHandler.clearOldMessages(); //clean up old read messages
             mySQLHandler.close(); //shut down the pool of MySQL connections
         }
     }

@@ -1,5 +1,6 @@
 package nu.nerd.nerdmessage.mail;
 
+import com.avaje.ebean.ExpressionFactory;
 import com.avaje.ebean.Query;
 import nu.nerd.nerdmessage.NerdMessage;
 import org.bukkit.ChatColor;
@@ -9,7 +10,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 
 public class MailHandler implements Listener {
@@ -56,6 +59,33 @@ public class MailHandler implements Listener {
                 }
             }
         }.runTaskLaterAsynchronously(plugin, 20L);
+    }
+
+
+    /**
+     * Clean up old read messages on plugin disable.
+     * This runs sync and should only be invoked by the onDisable method.
+     */
+    public void clearOldMessages() {
+        int days = plugin.getConfig().getInt("mail_cleanup_days", 0);
+        long thresh = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(days);
+        if (days < 1) return;
+        try {
+            ExpressionFactory expr = plugin.getDatabase().getExpressionFactory();
+            Query<MailMessage> query = plugin.getDatabase().find(MailMessage.class).where().and(
+                    expr.eq("read", 1),
+                    expr.lt("dateSent", thresh)
+            ).query();
+            if (query != null) {
+                List<MailMessage> messages = query.findList();
+                if (messages.size() > 0) {
+                    plugin.getLogger().info(String.format("Removing %d read mail messages over %d days old.", messages.size(), days));
+                    plugin.getDatabase().delete(messages);
+                }
+            }
+        } catch (Exception ex) {
+            plugin.getLogger().warning("Error performing message cleanup: " + ex.getMessage());
+        }
     }
 
 

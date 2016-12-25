@@ -4,6 +4,7 @@ alert_threshold: 3
 
 # Cross-server messaging and mail
 server_name: null
+mail_cleanup_days: 180
 
 redis:
   enabled: false
