@@ -26,3 +26,4 @@ Commands
 * `/abmotd` Display the current Administrator MOTD
 * `/setabmotd <message>` Set the Administrator MOTD
 * `/nerdmessagereload` Reload the configuration file
+* `/mail` Mail system commands
