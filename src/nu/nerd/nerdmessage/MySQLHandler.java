@@ -25,6 +25,7 @@ public class MySQLHandler {
     public MySQLHandler(NerdMessage plugin, FileConfiguration config) {
         this.plugin = plugin;
         dataSource = new HikariDataSource();
+        if (!plugin.getConfig().getBoolean("mysql.enabled")) return;
         setUpDataSource(config);
         setUpEbean();
     }
