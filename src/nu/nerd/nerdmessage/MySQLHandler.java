@@ -26,8 +26,13 @@ public class MySQLHandler {
         this.plugin = plugin;
         dataSource = new HikariDataSource();
         if (!plugin.getConfig().getBoolean("mysql.enabled")) return;
-        setUpDataSource(config);
-        setUpEbean();
+        try {
+            setUpDataSource(config);
+            setUpEbean();
+        } catch (PoolInitializationException ex) {
+            plugin.getConfig().set("mysql.enabled", false);
+            plugin.getLogger().warning("Could not connect to database. Mail will be disabled.");
+        }
     }
 
 
