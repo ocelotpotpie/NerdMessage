@@ -52,6 +52,7 @@ public class MailCommands implements CommandExecutor {
             }
             else if (args[0].equalsIgnoreCase("read")) {
                 readCommand(sender, args);
+                return true;
             }
             else if (args[0].equalsIgnoreCase("inbox")) {
                 inboxCommand(sender, args);
@@ -59,12 +60,19 @@ public class MailCommands implements CommandExecutor {
             }
             else if (args[0].equalsIgnoreCase("clear")) {
                 clearCommand(sender);
+                return true;
             }
-            else if (args[0].equalsIgnoreCase("archive")) {
+            else if (args[0].equalsIgnoreCase("archive") || args[0].equalsIgnoreCase("delete")) {
                 archiveCommand(sender, args);
+                return true;
             }
             else if (args[0].equalsIgnoreCase("thread")) {
                 threadCommand(sender, args);
+                return true;
+            }
+            else {
+                sender.sendMessage(String.format("%s\"/mail %s\" is not a valid command.", ChatColor.RED, args[0]));
+                return true;
             }
 
         }
