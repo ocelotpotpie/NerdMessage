@@ -9,6 +9,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
 import com.avaje.ebean.EbeanServer;
+import nu.nerd.nerdmessage.alerts.AlertHandler;
 import nu.nerd.nerdmessage.commands.BroadcastCommands;
 import nu.nerd.nerdmessage.commands.ChatCommands;
 import nu.nerd.nerdmessage.commands.IgnoreCommands;
@@ -38,6 +39,7 @@ public class NerdMessage extends JavaPlugin {
     private JedisPool jedisPool;
     private MySQLHandler mySQLHandler;
     private MailHandler mailHandler;
+    private AlertHandler alertHandler;
 
 
     @Override
@@ -48,6 +50,7 @@ public class NerdMessage extends JavaPlugin {
         mySQLHandler = new MySQLHandler(this, getConfig());
         registerCommands();
         mailHandler = new MailHandler(this);
+        alertHandler = new AlertHandler(this);
         new NerdMessageListener(this);
     }
 
@@ -61,6 +64,7 @@ public class NerdMessage extends JavaPlugin {
             mailHandler.clearOldMessages(); //clean up old read messages
             mySQLHandler.close(); //shut down the pool of MySQL connections
         }
+        alertHandler.stop();
     }
 
 
@@ -88,7 +92,7 @@ public class NerdMessage extends JavaPlugin {
     }
     
     
-    /*
+    /**
      * Reload the configuration file and redis
      */
     public void reload() {
@@ -100,6 +104,8 @@ public class NerdMessage extends JavaPlugin {
         this.alertThreshold = this.getConfig().getInt("alert_threshold", 3);
         this.serverName = this.getConfig().getString("server_name", null);
     	establishRedisConnection();
+        alertHandler.stop();
+        alertHandler.start();
     }
 
 
@@ -229,6 +235,14 @@ public class NerdMessage extends JavaPlugin {
      */
     public MailHandler getMailHandler() {
         return mailHandler;
+    }
+
+
+    /**
+     * Get the alert handler instance
+     */
+    public AlertHandler getAlertHandler() {
+        return alertHandler;
     }
 
 
