@@ -33,6 +33,11 @@ public class AlertMessage {
 
 
     public String getText() {
+        return ChatColor.translateAlternateColorCodes('&', text);
+    }
+
+
+    public String getRawText() {
         return text;
     }
 

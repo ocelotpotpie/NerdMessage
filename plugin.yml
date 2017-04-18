@@ -67,6 +67,11 @@ permissions:
     description: Access to set the Administrator MOTD
     default: op
 
+  nerdmessage.alert:
+    description: Access /alert list
+  nerdmessage.alert.admin:
+    description: Access to manage server alerts
+
   nerdmessage.reload:
     description: Access to reload the configuration file
     default: op
@@ -119,6 +124,10 @@ commands:
   mail:
     permission: nerdmessage.mail
     description: Send and recieve messages, even to offline players.
+
+  alert:
+    permission: nerdmessage.alert
+    description: Server alerts
 
   motd:
     permission: nerdmessage.motd

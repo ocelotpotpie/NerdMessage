@@ -10,6 +10,7 @@ import java.util.logging.Level;
 
 import com.avaje.ebean.EbeanServer;
 import nu.nerd.nerdmessage.alerts.AlertHandler;
+import nu.nerd.nerdmessage.commands.AlertCommands;
 import nu.nerd.nerdmessage.commands.BroadcastCommands;
 import nu.nerd.nerdmessage.commands.ChatCommands;
 import nu.nerd.nerdmessage.commands.IgnoreCommands;
@@ -78,6 +79,7 @@ public class NerdMessage extends JavaPlugin {
         new MOTDCommands(this);
         new OtherCommands(this);
         new MailCommands(this);
+        new AlertCommands(this);
     }
 
 

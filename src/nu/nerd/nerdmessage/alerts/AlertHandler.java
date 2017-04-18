@@ -10,6 +10,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,8 +34,11 @@ public class AlertHandler {
     }
 
 
+    /**
+     * Start the alert rotation after loading the messages and settings from disk
+     */
     public void start() {
-        loadFromDisk();
+        loadAlerts();
         index = yaml.getInt("index", 0);
         int seconds = yaml.getInt("seconds", 200);
         runnable = new BukkitRunnable() {
@@ -53,6 +57,9 @@ public class AlertHandler {
     }
 
 
+    /**
+     * Stop the alert rotation and save state to disk
+     */
     public void stop() {
         runnable.cancel();
         try {
@@ -65,7 +72,10 @@ public class AlertHandler {
     }
 
 
-    private void loadFromDisk() {
+    /**
+     * Load the alerts from the config
+     */
+    private void loadAlerts() {
         alerts = new ArrayList<AlertMessage>();
         String text, color;
         for (Map<?, ?> map : yaml.getMapList("alerts")) {
@@ -76,8 +86,54 @@ public class AlertHandler {
     }
 
 
+    /**
+     * Serialize the alerts into the YAML configuration object
+     */
+    private void serializeAlerts() {
+        List<Map<String, String>> maps = new ArrayList<Map<String, String>>();
+        for (AlertMessage alert : alerts) {
+            Map<String, String> m = new HashMap<String, String>();
+            m.put("text", alert.getRawText());
+            if (!alert.getColor().equals(ChatColor.LIGHT_PURPLE)) {
+                m.put("color", alert.getColor().name());
+            }
+            maps.add(m);
+        }
+        yaml.set("alerts", maps);
+    }
+
+
+    /**
+     * Format and send the message to all users online
+     */
     private void broadcast(AlertMessage msg) {
-        plugin.getServer().broadcastMessage(String.format("%s[Server] %s", msg.getColor(), ChatColor.translateAlternateColorCodes('&', msg.getText())));
+        plugin.getServer().broadcastMessage(String.format("%s[Server] %s", msg.getColor(), msg.getText()));
+    }
+
+
+    /**
+     * Get the active alert messages
+     */
+    public List<AlertMessage> getAlerts() {
+        return alerts;
+    }
+
+
+    /**
+     * Add a new alert to the rotation
+     * @param alert the alert to add
+     * @param index the index to put it at
+     * @return true if successful
+     */
+    public boolean addAlert(AlertMessage alert, int index) {
+        try {
+            alerts.add(index, alert);
+            serializeAlerts();
+            yaml.save(yamlFile);
+        } catch (IOException ex) {
+            return false;
+        }
+        return true;
     }
 
 
