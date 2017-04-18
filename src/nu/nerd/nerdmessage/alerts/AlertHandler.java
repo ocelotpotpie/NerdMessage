@@ -137,4 +137,39 @@ public class AlertHandler {
     }
 
 
+    /**
+     * Remove an alert from the rotation
+     * @param index the index to remove
+     * @return AlertMessage if successful or null
+     */
+    public AlertMessage removeAlert(int index) {
+        AlertMessage alert;
+        try {
+            alert = alerts.remove(index);
+            serializeAlerts();
+            yaml.save(yamlFile);
+        } catch (IOException ex) {
+            return null;
+        }
+        return alert;
+    }
+
+
+    /**
+     * Change the interval in seconds that alerts are broadcast
+     * @param seconds interval
+     */
+    public void changeInterval(int seconds) {
+        try {
+            runnable.cancel();
+            yaml.load(yamlFile);
+            yaml.set("seconds", seconds);
+            yaml.save(yamlFile);
+            start();
+        } catch (IOException|InvalidConfigurationException ex) {
+            plugin.getLogger().warning("Could not write alerts.yml");
+        }
+    }
+
+
 }

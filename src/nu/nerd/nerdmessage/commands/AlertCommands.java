@@ -9,7 +9,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +48,14 @@ public class AlertCommands implements CommandExecutor {
                 insertCommand(sender, args);
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("remove")) {
+                removeCommand(sender, args);
+                return true;
+            }
+            else if (args[0].equalsIgnoreCase("interval")) {
+                intervalCommand(sender, args);
+                return true;
+            }
         }
         return false;
     }
@@ -64,7 +71,7 @@ public class AlertCommands implements CommandExecutor {
         sender.sendMessage("        Insert the message into the broadcast rotation.");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "    /alert remove <number>");
         sender.sendMessage("        Remove a message by number.");
-        sender.sendMessage(ChatColor.LIGHT_PURPLE + "    /alert interval [<seconds>]");
+        sender.sendMessage(ChatColor.LIGHT_PURPLE + "    /alert interval <seconds>");
         sender.sendMessage("        Get or set the interval between broadcasts in seconds.");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "    /alert reload");
         sender.sendMessage("        Reload the alerts from the YAML file.");
@@ -109,7 +116,7 @@ public class AlertCommands implements CommandExecutor {
      */
     private void insertCommand(CommandSender sender, String[] args) {
 
-        if (args.length < 2) {
+        if (args.length < 3) {
             sender.sendMessage(ChatColor.RED + "Usage: /alert insert <index> [color] <message>");
             return;
         }
@@ -119,7 +126,7 @@ public class AlertCommands implements CommandExecutor {
         try {
             index = Integer.parseInt(args[1]);
         } catch (NumberFormatException ex) {
-            sender.sendMessage("A numerical index must be specified.");
+            sender.sendMessage(ChatColor.RED + "A numerical index must be specified.");
             return;
         }
         if (index < 1 || index > max) {
@@ -137,6 +144,70 @@ public class AlertCommands implements CommandExecutor {
 
         plugin.getAlertHandler().addAlert(alert, index - 1);
         sender.sendMessage(String.format("%sAlert #%d added.", ChatColor.LIGHT_PURPLE, index));
+
+    }
+
+
+    /**
+     * Remove alert at index
+     * @param sender
+     */
+    private void removeCommand(CommandSender sender, String[] args) {
+
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /alert remove <number>");
+            return;
+        }
+
+        Integer index;
+        int numAlerts = plugin.getAlertHandler().getAlerts().size();
+        try {
+            index = Integer.parseInt(args[1]);
+        } catch (NumberFormatException ex) {
+            sender.sendMessage(ChatColor.RED + "A numerical index must be specified.");
+            return;
+        }
+        if (numAlerts < 1) {
+            sender.sendMessage(ChatColor.RED + "There are no alerts to remove.");
+            return;
+        }
+        if (index < 1 || index > numAlerts + 1) {
+            sender.sendMessage(String.format("%sThe index must be a number between 1 and %d inclusive.", ChatColor.RED, numAlerts + 1));
+            return;
+        }
+
+        AlertMessage alert = plugin.getAlertHandler().removeAlert(index - 1);
+        if (alert != null) {
+            sender.sendMessage(String.format("%sRemoved alert: %s%s", ChatColor.LIGHT_PURPLE, alert.getColor(), alert.getText()));
+        }
+
+    }
+
+    /**
+     * Admin command to set the interval between broadcast messages, in seconds.
+     */
+    private void intervalCommand(CommandSender sender, String[] args) {
+
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /alert interval <seconds>");
+            return;
+        }
+
+        int minInterval = 30;
+        Integer seconds;
+        try {
+            seconds = Integer.parseInt(args[1]);
+        } catch (NumberFormatException ex) {
+            sender.sendMessage(ChatColor.RED + "You must specify the interval in seconds as a number.");
+            return;
+        }
+        if (seconds < minInterval) {
+            sender.sendMessage(String.format("%sThe interval must be at least %d seconds.", ChatColor.RED, minInterval));
+            return;
+        }
+
+        plugin.getAlertHandler().changeInterval(seconds);
+        sender.sendMessage(String.format("%sThe alert broadcast interval was set to %d seconds.", ChatColor.LIGHT_PURPLE, seconds));
 
     }
 
