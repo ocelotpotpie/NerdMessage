@@ -69,8 +69,10 @@ permissions:
 
   nerdmessage.alert:
     description: Access /alert list
+    default: true
   nerdmessage.alert.admin:
     description: Access to manage server alerts
+    default: op
 
   nerdmessage.reload:
     description: Access to reload the configuration file
