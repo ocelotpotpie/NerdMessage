@@ -56,6 +56,10 @@ public class AlertCommands implements CommandExecutor {
                 intervalCommand(sender, args);
                 return true;
             }
+            else if (args[0].equalsIgnoreCase("reload")) {
+                reloadCommand(sender);
+                return true;
+            }
         }
         return false;
     }
@@ -209,6 +213,16 @@ public class AlertCommands implements CommandExecutor {
         plugin.getAlertHandler().changeInterval(seconds);
         sender.sendMessage(String.format("%sThe alert broadcast interval was set to %d seconds.", ChatColor.LIGHT_PURPLE, seconds));
 
+    }
+
+
+    /**
+     * Reload alerts.yml
+     */
+    private void reloadCommand(CommandSender sender) {
+        plugin.getAlertHandler().stop();
+        plugin.getAlertHandler().start();
+        sender.sendMessage(ChatColor.LIGHT_PURPLE + "Alerts reloaded.");
     }
 
 

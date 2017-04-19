@@ -29,7 +29,6 @@ public class AlertHandler {
     public AlertHandler(NerdMessage plugin) {
         this.plugin = plugin;
         this.yamlFile = new File(plugin.getDataFolder(), "alerts.yml");
-        this.yaml = YamlConfiguration.loadConfiguration(yamlFile);
         start();
     }
 
@@ -38,6 +37,7 @@ public class AlertHandler {
      * Start the alert rotation after loading the messages and settings from disk
      */
     public void start() {
+        this.yaml = YamlConfiguration.loadConfiguration(yamlFile);
         loadAlerts();
         index = yaml.getInt("index", 0);
         int seconds = yaml.getInt("seconds", 200);
