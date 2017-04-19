@@ -75,7 +75,7 @@ public class AlertCommands implements CommandExecutor {
         sender.sendMessage("        Insert the message into the broadcast rotation.");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "    /alert remove <number>");
         sender.sendMessage("        Remove a message by number.");
-        sender.sendMessage(ChatColor.LIGHT_PURPLE + "    /alert interval <seconds>");
+        sender.sendMessage(ChatColor.LIGHT_PURPLE + "    /alert interval [seconds]");
         sender.sendMessage("        Get or set the interval between broadcasts in seconds.");
         sender.sendMessage(ChatColor.LIGHT_PURPLE + "    /alert reload");
         sender.sendMessage("        Reload the alerts from the YAML file.");
@@ -188,12 +188,13 @@ public class AlertCommands implements CommandExecutor {
     }
 
     /**
-     * Admin command to set the interval between broadcast messages, in seconds.
+     * Admin command to get or set the interval between broadcast messages, in seconds.
      */
     private void intervalCommand(CommandSender sender, String[] args) {
 
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /alert interval <seconds>");
+            int seconds = plugin.getAlertHandler().getInterval();
+            sender.sendMessage(String.format("%sAlerts are broadcast every %d seconds.", ChatColor.LIGHT_PURPLE, seconds));
             return;
         }
 
@@ -210,7 +211,7 @@ public class AlertCommands implements CommandExecutor {
             return;
         }
 
-        plugin.getAlertHandler().changeInterval(seconds);
+        plugin.getAlertHandler().setInterval(seconds);
         sender.sendMessage(String.format("%sThe alert broadcast interval was set to %d seconds.", ChatColor.LIGHT_PURPLE, seconds));
 
     }

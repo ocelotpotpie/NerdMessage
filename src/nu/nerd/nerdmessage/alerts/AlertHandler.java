@@ -159,7 +159,7 @@ public class AlertHandler {
      * Change the interval in seconds that alerts are broadcast
      * @param seconds interval
      */
-    public void changeInterval(int seconds) {
+    public void setInterval(int seconds) {
         try {
             runnable.cancel();
             yaml.load(yamlFile);
@@ -169,6 +169,14 @@ public class AlertHandler {
         } catch (IOException|InvalidConfigurationException ex) {
             plugin.getLogger().warning("Could not write alerts.yml");
         }
+    }
+
+
+    /**
+     * Get the interval in seconds between broadcasts
+     */
+    public int getInterval() {
+        return yaml.getInt("seconds", 200);
     }
 
 
