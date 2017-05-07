@@ -1,5 +1,6 @@
 package nu.nerd.nerdmessage.commands;
 
+import nu.nerd.nerdmessage.NMUser;
 import nu.nerd.nerdmessage.mail.MailException;
 import nu.nerd.nerdmessage.mail.MailMessage;
 import nu.nerd.nerdmessage.mail.MailUser;
@@ -116,6 +117,13 @@ public class MailCommands implements CommandExecutor {
 
         if (args.length < 3) {
             sender.sendMessage(ChatColor.RED + "Usage: /mail send <user> <message>");
+            return;
+        }
+
+        NMUser nmUser = plugin.getOrCreateUser(args[1]);
+        if (nmUser.isIgnoringPlayer(sender.getName())) {
+            // Recipient is ignoring the sender. Sneakily return early.
+            sender.sendMessage(String.format("%sMessage sent: %s", ChatColor.GREEN, StringUtil.join(args, 2)));
             return;
         }
 
