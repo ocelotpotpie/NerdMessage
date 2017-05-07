@@ -168,7 +168,7 @@ public class ChatCommands implements CommandExecutor {
     private void sendPublicMessage(CommandSender sender, String message) {
         for (Player p : plugin.getServer().getOnlinePlayers()) {
             NMUser recipient = plugin.getUser(ChatColor.stripColor(p.getName()));
-            if (recipient == null || !recipient.isIgnoringPlayer(sender.getName().toLowerCase())) {
+            if (recipient == null || !recipient.isIgnoringPlayer(sender.getName())) {
                 p.sendMessage(message);
             }
         }

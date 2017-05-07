@@ -53,9 +53,9 @@ public class IgnoreCommands implements CommandExecutor {
             return;
         }
 
-        if (plugin.getOrCreateUser(sender.getName()).addIgnoredPlayer(ignoreName.toLowerCase())) {
+        if (plugin.getOrCreateUser(sender.getName()).addIgnoredPlayer(ignoreName)) {
             sender.sendMessage(ChatColor.GOLD + "Ignoring " + ignoreName + " until the next restart.");
-            this.handleStaffAlert(ignoreName.toLowerCase());
+            this.handleStaffAlert(ignoreName);
         } else {
             sender.sendMessage(ChatColor.RED + "You are already ignoring that player.");
         }
@@ -80,8 +80,8 @@ public class IgnoreCommands implements CommandExecutor {
      */
     private void handleStaffAlert(String name) {
         Integer count = 1;
-        if (plugin.getMuteCounts().containsKey(name)) {
-            count = plugin.getMuteCounts().get(name);
+        if (plugin.getMuteCounts().containsKey(name.toLowerCase())) {
+            count = plugin.getMuteCounts().get(name.toLowerCase());
             count = count + 1;
             if (plugin.getAlertThreshold() > 0) {
                 if (count % plugin.getAlertThreshold() == 0) {
@@ -90,7 +90,7 @@ public class IgnoreCommands implements CommandExecutor {
                 }
             }
         }
-        plugin.getMuteCounts().put(name, count);
+        plugin.getMuteCounts().put(name.toLowerCase(), count);
     }
 
 

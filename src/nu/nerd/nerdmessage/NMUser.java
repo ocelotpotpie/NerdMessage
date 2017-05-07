@@ -40,15 +40,15 @@ public class NMUser {
     }
 
     public boolean addIgnoredPlayer(String playerName) {
-        return ignoring.add(playerName);
+        return ignoring.add(playerName.toLowerCase());
     }
 
     public boolean removeIgnoredPlayer(String playerName) {
-        return ignoring.remove(playerName);
+        return ignoring.remove(playerName.toLowerCase());
     }
 
     public boolean isIgnoringPlayer(String playerName) {
-        return ignoring.contains(playerName);
+        return ignoring.contains(playerName.toLowerCase());
     }
 
 }
