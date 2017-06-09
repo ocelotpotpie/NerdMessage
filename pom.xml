@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nu.nerd</groupId>
 	<artifactId>nerdmessage</artifactId>
-	<version>1.2.2-SNAPSHOT</version>
+	<version>1.2.2</version>
 	<packaging>jar</packaging>
 	<name>NerdMessage</name>
     <description>Messaging plugin for Bukkit</description>
