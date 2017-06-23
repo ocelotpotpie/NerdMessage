@@ -47,7 +47,7 @@ public class AlertHandler {
                 if (index >= alerts.size()) {
                     index = 0;
                 }
-                if (alerts.get(index) != null) {
+                if (!alerts.isEmpty() && alerts.get(index) != null) {
                     broadcast(alerts.get(index));
                 }
                 index++;
