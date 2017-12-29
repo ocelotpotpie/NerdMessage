@@ -29,14 +29,22 @@ public class ChatCommands implements CommandExecutor {
         if (args.length == 0) return false;
         if (cmd.getName().equalsIgnoreCase("msg")) {
             if (label.equalsIgnoreCase("r") || label.equalsIgnoreCase("reply")) {
-                reply(sender, StringUtil.join(args));
+                reply(sender, StringUtil.join(args), false, false, false);
+            } else if (label.equalsIgnoreCase("m") || label.equalsIgnoreCase("msg")) {
+                msg(sender, args[0], StringUtil.join(args, 1), false, false, false);
+            } else if (label.equalsIgnoreCase("rs")) {
+                reply(sender, StringUtil.join(args), false, true, false);
+            } else if (label.equalsIgnoreCase("rme")) {
+                reply(sender, StringUtil.join(args), false, false, true);
+            } else if (label.equalsIgnoreCase("rsme")) {
+                reply(sender, StringUtil.join(args), false, true, true);
             } else {
-                msg(sender, args[0], StringUtil.join(args, 1), false);
+                return false;
             }
             return true;
         }
         else if (cmd.getName().equalsIgnoreCase("cmsg")) {
-            msg(sender, args[0], StringUtil.join(args, 1), true);
+            msg(sender, args[0], StringUtil.join(args, 1), true, false, false);
             return true;
         }
         else if (cmd.getName().equalsIgnoreCase("me")) {
@@ -59,8 +67,10 @@ public class ChatCommands implements CommandExecutor {
      * @param recipientName The username string of the recipient
      * @param message The message to send
      * @param green Whether this is a staff green message from /cmsg
+     * @param sarcastic Whether this message will be italic
+     * @param action Whether this message will be an action
      */
-    public void msg(CommandSender sender, String recipientName, String message, boolean green) {
+    public void msg(CommandSender sender, String recipientName, String message, boolean green, boolean sarcastic, boolean action) {
 
         NMUser user = plugin.getOrCreateUser(sender.getName());
         CommandSender recipient = null;
@@ -91,13 +101,19 @@ public class ChatCommands implements CommandExecutor {
         boolean doSendMessage = sender.hasPermission("nerdmessage.ignore.bypass-msg") || !(r.isIgnoringPlayer(sender.getName()));
 
         // Send the message
-        sender.sendMessage(tag("Me", recipient.getName()) + message);
+        if (sarcastic) {
+            sender.sendMessage(tag("Me", recipient.getName(), action) + ChatColor.ITALIC + message);
+        } else {
+            sender.sendMessage(tag("Me", recipient.getName(), action) + message);
+        }
         if (doSendMessage) {
             if (green) {
-                recipient.sendMessage(tag(sender.getName(), "Me") + ChatColor.GREEN + message);
-            } else {
-                recipient.sendMessage(tag(sender.getName(), "Me") + message);
+                message = ChatColor.GREEN + message;
             }
+	    if (sarcastic) {
+                message = ChatColor.ITALIC + message;
+            }
+	    recipient.sendMessage(tag(sender.getName(), "Me", action) + message);
         }
 
         // Logs
@@ -114,13 +130,13 @@ public class ChatCommands implements CommandExecutor {
      * The "reply-to" recipient is either the last person you messaged or the last person to message you,
      * depending on which is the newest event.
      */
-    public void reply(CommandSender sender, String message) {
+    public void reply(CommandSender sender, String message, boolean green, boolean sarcastic, boolean action) {
         NMUser user = plugin.getUser(sender.getName());
         if (user == null || user.getReplyTo() == null) {
             sender.sendMessage(ChatColor.RED + "No user to reply to.");
             return;
         }
-        msg(sender, user.getReplyTo(), message, false);
+        msg(sender, user.getReplyTo(), message, green, sarcastic, action);
     }
 
 
@@ -156,9 +172,15 @@ public class ChatCommands implements CommandExecutor {
      * Format a [sender -> recipient] tag for a private message
      * @param leftUser The username on the left of the arrow (e.g. "Me" or "redwall_hp")
      * @param rightUser The username on the right of the arrow
+     * @param action Wheter the message should be formated as an action
      */
-    private String tag(String leftUser, String rightUser) {
-        return String.format("[%s%s%s -> %s%s%s] ", ChatColor.RED, leftUser, ChatColor.WHITE, ChatColor.GOLD, rightUser, ChatColor.WHITE);
+    private String tag(String leftUser, String rightUser, boolean action) {
+        if (action) {
+            return String.format("[*%s%s%s -> %s%s%s] ", ChatColor.RED, leftUser, ChatColor.WHITE, ChatColor.GOLD, rightUser, ChatColor.WHITE);
+
+        } else {
+            return String.format("[%s%s%s -> %s%s%s] ", ChatColor.RED, leftUser, ChatColor.WHITE, ChatColor.GOLD, rightUser, ChatColor.WHITE);
+        }
     }
 
 
