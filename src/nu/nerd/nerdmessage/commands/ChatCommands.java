@@ -30,7 +30,7 @@ public class ChatCommands implements CommandExecutor {
         if (cmd.getName().equalsIgnoreCase("msg")) {
             if (label.equalsIgnoreCase("r") || label.equalsIgnoreCase("reply")) {
                 reply(sender, StringUtil.join(args), false, false, false);
-            } else if (label.equalsIgnoreCase("m") || label.equalsIgnoreCase("msg")) {
+            } else if (label.equalsIgnoreCase("m") || label.equalsIgnoreCase("msg") || label.equalsIgnoreCase("t") || label.equalsIgnoreCase("tell")) {
                 msg(sender, args[0], StringUtil.join(args, 1), false, false, false);
             } else if (label.equalsIgnoreCase("rs")) {
                 reply(sender, StringUtil.join(args), false, true, false);
