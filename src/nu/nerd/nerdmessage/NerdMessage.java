@@ -8,7 +8,14 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import com.avaje.ebean.EbeanServer;
+
 import nu.nerd.nerdmessage.alerts.AlertHandler;
 import nu.nerd.nerdmessage.commands.AlertCommands;
 import nu.nerd.nerdmessage.commands.BroadcastCommands;
@@ -17,13 +24,7 @@ import nu.nerd.nerdmessage.commands.IgnoreCommands;
 import nu.nerd.nerdmessage.commands.MOTDCommands;
 import nu.nerd.nerdmessage.commands.MailCommands;
 import nu.nerd.nerdmessage.commands.OtherCommands;
-
 import nu.nerd.nerdmessage.mail.MailHandler;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -33,8 +34,8 @@ public class NerdMessage extends JavaPlugin {
 
 
     public static NerdMessage instance;
-    private List<NMUser> users = new CopyOnWriteArrayList<NMUser>();
-    private HashMap<String, Integer> muteCounts = new HashMap<String, Integer>();
+    private final List<NMUser> users = new CopyOnWriteArrayList<NMUser>();
+    private final HashMap<String, Integer> muteCounts = new HashMap<String, Integer>();
     private Integer alertThreshold;
     private String serverName;
     private JedisPool jedisPool;
@@ -138,6 +139,7 @@ public class NerdMessage extends JavaPlugin {
         }
 
         getServer().getScheduler().runTaskAsynchronously(this, new Runnable() {
+            @Override
             public void run() {
                 try {
                     Jedis jedis = getJedisResource();
@@ -169,7 +171,8 @@ public class NerdMessage extends JavaPlugin {
      * @param message The message to send to the Redis channel
      */
     public void redisPublish(final CommandSender sender, final String channel, final String message) {
-        getServer().getScheduler().runTaskAsynchronously(this, new BukkitRunnable() {
+        Bukkit.getScheduler().runTaskAsynchronously(this, new Runnable() {
+            @Override
             public void run()  {
                 Jedis jedis = null;
                 try {
@@ -179,7 +182,8 @@ public class NerdMessage extends JavaPlugin {
                     final String error = ex.getMessage();
                     getLogger().log(Level.SEVERE, error);
                     if (sender != null) {
-                        getServer().getScheduler().runTask(NerdMessage.this, new BukkitRunnable() {
+                        Bukkit.getScheduler().runTask(NerdMessage.this, new Runnable() {
+                            @Override
                             public void run() {
                                 sender.sendMessage(ChatColor.RED + "NerdMessage Error: " + error);
                             }
@@ -198,7 +202,7 @@ public class NerdMessage extends JavaPlugin {
      * Don't forget to return it to the pool after...
      * @throws Exception
      */
-    private Jedis getJedisResource() throws Exception {
+    Jedis getJedisResource() throws Exception {
         if (jedisPool != null) {
             return jedisPool.getResource();
         } else {
