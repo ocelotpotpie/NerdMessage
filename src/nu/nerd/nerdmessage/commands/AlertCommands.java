@@ -1,23 +1,24 @@
 package nu.nerd.nerdmessage.commands;
 
-import com.google.common.collect.Lists;
-import nu.nerd.nerdmessage.NerdMessage;
-import nu.nerd.nerdmessage.StringUtil;
-import nu.nerd.nerdmessage.alerts.AlertMessage;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import nu.nerd.nerdmessage.NerdMessage;
+import nu.nerd.nerdmessage.StringUtil;
+import nu.nerd.nerdmessage.alerts.AlertMessage;
 
 
 public class AlertCommands implements CommandExecutor {
 
 
-    private NerdMessage plugin;
+    private final NerdMessage plugin;
 
 
     public AlertCommands(NerdMessage plugin) {
@@ -26,6 +27,7 @@ public class AlertCommands implements CommandExecutor {
     }
 
 
+    @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!cmd.getName().equalsIgnoreCase("alert")) return false;
         // Help text
@@ -231,7 +233,7 @@ public class AlertCommands implements CommandExecutor {
      * Map of user-friendly color names to use for alerts' primary color
      */
     private Map<String, ChatColor> getColorMap() {
-        List<String> excluded = Lists.newArrayList("BOLD", "ITALIC", "PLAIN_WHITE", "RANDOM", "STRIKETHROUGH", "UNDERLINE");
+        List<String> excluded = Arrays.asList("BOLD", "ITALIC", "PLAIN_WHITE", "RANDOM", "STRIKETHROUGH", "UNDERLINE");
         Map<String, ChatColor> colors = new HashMap<String, ChatColor>();
         colors.put("darkgrey", ChatColor.DARK_GRAY);
         colors.put("orange", ChatColor.GOLD);
