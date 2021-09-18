@@ -9,7 +9,6 @@ import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
 import com.avaje.ebean.config.ServerConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.pool.PoolInitializationException;
 
 import nu.nerd.nerdmessage.mail.MailMessage;
 import nu.nerd.nerdmessage.mail.MailUser;
@@ -31,7 +30,7 @@ public class MySQLHandler {
             Class.forName("com.mysql.jdbc.Driver");
             setUpDataSource(config);
             setUpEbean();
-        } catch (PoolInitializationException | ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             plugin.getConfig().set("mysql.enabled", false);
             plugin.getLogger().warning("Could not connect to database. Mail will be disabled. Reason: " + ex.getMessage());
         }
@@ -63,8 +62,6 @@ public class MySQLHandler {
         } catch (SQLException ex) {
             plugin.getLogger().warning("MySQL connection error: " + ex.getMessage());
             throw ex;
-        } catch (PoolInitializationException ex) {
-            throw new SQLException("MySQL pool was not initialized.");
         }
     }
 
